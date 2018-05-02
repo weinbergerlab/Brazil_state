@@ -13,6 +13,8 @@ library(MASS)
 library(splines, quietly = TRUE)
 library(knitr)
 library(plotly)
+library(devtools)
+
 
 #Set working directory: default to desktop--different path for windows vs Mac
 if(.Platform$OS.type == "windows") {
@@ -21,6 +23,10 @@ if(.Platform$OS.type == "windows") {
   desktop<- "~/Desktop"
 }
 setwd(desktop)
+
+#read in function file--can read directly from github
+source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
+#source('functions glm aic mod ave.R')
 
 ###############USER SPECIFIED VALUES
 country="Brazil"
