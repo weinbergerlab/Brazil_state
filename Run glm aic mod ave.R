@@ -37,6 +37,7 @@ noj_name <- 'cJ20_J22'
 date_name<-'date'
 data_start_date <- as.Date('2004-01-01')   #When do you want the analysis to start? (yyyy-mm-01)
 data_intervention_start<-as.Date('2010-01-01')   #When is the intervention introduced?  (yyyy-mm-01)
+n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
 N.sim=10000 #total number of random draws for the predictive distribution
 #################################################
 #IMPORT DATA 
@@ -159,25 +160,27 @@ covars.raw2<-do.call(cbind, covars.raw.compile)
 covars.raw2<-cbind(covars.raw,covars.raw2)
 covars<-covars.raw2 #COMBINE ALL VARIABLES WITH DIFFERENT SMOOTHING LEVELS, FROM RAW TO VERY SMOOTH
 ##########################################################################################
-##########################################################################################
-#SECTION 3: ADD MONTHLY DUMMY, TIME TREND VARIABLES TO DATASET
+###########################################################################################SECTION 3: ADD MONTHLY DUMMY, TIME TREND VARIABLES TO DATASET
 covars$t<-1:nrow(covars)/120
 covars$nocovars<-rep(1, times=nrow(covars)) #constant
 data.sel<-covars
 covar<-data.sel
-#Create Monthly dummies
-m1 = rep(c(1,0,0,0,0,0,0,0,0,0,0,0), nrow(data.sel)/12) 
-m2 = rep(c(0,1,0,0,0,0,0,0,0,0,0,0),nrow(data.sel)/12)
-m3 = rep(c(0,0,1,0,0,0,0,0,0,0,0,0), nrow(data.sel)/12)
-m4 = rep(c(0,0,0,1,0,0,0,0,0,0,0,0),nrow(data.sel)/12)
-m5 = rep(c(0,0,0,0,1,0,0,0,0,0,0,0), nrow(data.sel)/12)
-m6 = rep(c(0,0,0,0,0,1,0,0,0,0,0,0), nrow(data.sel)/12)
-m7 = rep(c(0,0,0,0,0,0,1,0,0,0,0,0), nrow(data.sel)/12)
-m8 = rep(c(0,0,0,0,0,0,0,1,0,0,0,0), nrow(data.sel)/12)
-m9 = rep(c(0,0,0,0,0,0,0,0,1,0,0,0),nrow(data.sel)/12)
-m10 =rep(c(0,0,0,0,0,0,0,0,0,1,0,0),nrow(data.sel)/12)
-m11 = rep(c(0,0,0,0,0,0,0,0,0,0,1,0),nrow(data.sel)/12)
-month.ind.matrix<-cbind(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11)
+#Create Monthly dummies#Monthly dummies
+if(n_seasons==4){x<-quarter(as.Date(time_points))}
+if(n_seasons==12){x<-month(as.Date(time_points))}
+if(n_seasons==3){
+    x.m<-month(as.Date(time_points))
+    x<-x.m
+    x[x.m %in% c(1,2,3,4)]<-1
+    x[x.m %in% c(5,6,7,8)]<-2
+    x[x.m %in% c(9,10,11,12)]<-3
+}
+x.df<-as.data.frame(as.factor(x))
+names(x.df)<-'m'
+season.dummies<-  as.numeric(as.character(as.matrix(dummy(x.df))))
+season.dummies<-matrix(season.dummies, nrow=length(time_points), ncol=n_seasons)
+season.dummies<-season.dummies[,-n_seasons]
+dimnames(season.dummies)[[2]]<-paste0('m',1:(n_seasons-1))
 predictors<-as.matrix(covars)
 #predictors <-cbind(predictors, ifelse(time_points == '2009-08-01', 1, ifelse(time_points == '2009-09-01', 1, 0)))
 #dimnames(predictors)[[2]][ncol(predictors)]<-'pandemic'
@@ -189,14 +192,14 @@ if(country=='Fiji'){
 outcome.pre<-outcome
 outcome.pre[post.start.index:length(outcome)]<-NA
 #COMBINE MONTHLY DUMMIES AND COVARIATES AND PANDEMIC INTO SINGLE DATAFRAME
-covar.matrix<-cbind.data.frame(month.ind.matrix,pandemic,predictors)
+covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
 covar.lab<-dimnames(covar.matrix)[[2]]
 time<-1:nrow(data.sel)
 time_post<-(time[post.start.index:length(outcome)]-post.start.index+1)/100
 data.fit<-cbind.data.frame(outcome.pre, covar.matrix)
 data.fit$outcome.pre<-as.integer(data.fit$outcome.pre)
 one<-rep(1,times=nrow(data.fit))
-
+  
 #INITIALIZE VARIOUS LISTS TO STORE RESULTS
 aic.test <- vector(mode="numeric", length=ncol(covars))
 V<- vector("list",  length=ncol(covars)) #combine models into a list
