@@ -12,7 +12,7 @@ source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/
 #source('functions glm aic mod ave.R')
 
 packages <- c('RCurl','reshape2','RColorBrewer','matlib', 'knitr','plotly','MASS', 'splines', 'lubridate','devtools')
-packageHandler(packages, update_packages, install_packages)
+packageHandler(packages)
 sapply(packages, library, quietly = TRUE, character.only = TRUE)
 
 #Set working directory: default to desktop--different path for windows vs Mac
