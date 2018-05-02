@@ -44,8 +44,9 @@ N.sim=10000 #total number of random draws for the predictive distribution
   d1 <- read.csv(text=git.data)
 ############################################  
   
-  output_directory<-'./output'
-  dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
+output_directory<-paste0(getwd(),'/output/')
+dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
+
    
   d1.list<-split(d1,d1$age_group)
   names(d1.list)
