@@ -73,8 +73,8 @@ for(k in 1:length(reg.names)){
 #SECTION 1: IMPORTING AND FORMATTING TIME SERIES
 
         strata.label=unique(in.data$age_group)
-        output_directory<-paste('C:/Users/DMW63/Desktop/My documents h/Gates/CausalImpact code/Brazil_state/', strata.label,'/', sep='')
-        dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
+       # output_directory<-paste('C:/Users/DMW63/Desktop/My documents h/Gates/CausalImpact code/Brazil_state/', strata.label,'/', sep='')
+      #  dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
         ds1a<-in.data
         age_groups <- paste( unique(unlist(ds1a$age_group, use.names = FALSE)))
   
