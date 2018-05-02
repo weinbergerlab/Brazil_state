@@ -1,3 +1,34 @@
+packageHandler <- function(packages, update_packages = TRUE, install_packages = TRUE) {
+	bad_packages <- list()
+	for (package in packages) {
+		if (install_packages) {
+			tryCatch({
+				find.package(package)
+			}, error = function(e) {
+									if (package %in% available.packages()) {
+						install.packages(package, repos = 'http://cran.rstudio.com/')
+					} else {
+						bad_packages <<- append(bad_packages, package)
+					}
+			}, warning = function(w) {
+				paste(w, 'Shouldn\'t be here.')
+			}, finally = {
+				if (update_packages) {
+					
+						update.packages(package, repos = 'http://cran.rstudio.com/')
+					}	
+			})
+		}
+	}
+	if (length(bad_packages) > 0) {
+		if (length(bad_packages) == 1) {
+			stop(paste('Package', paste('"', bad_packages, '"', sep = ''), 'is not available for', paste(version$version.string, '.', sep = '')))
+		} else {
+			stop(paste('Packages', paste(lapply(bad_packages, function(bad_package) {paste('"', bad_package, '"', sep = '')}), collapse = ', '), 'are not available for', paste(version$version.string, '.', sep = '')))
+		}
+	}
+	return()
+}
 #FOR BRAZIL: DETREND
 getTrend <- function(covar_vector, data) {
   new_data <- data
