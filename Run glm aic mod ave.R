@@ -11,9 +11,10 @@ library(abind)
 source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
 #source('functions glm aic mod ave.R')
 
-packages <- c('RCurl','reshape2','RColorBrewer','matlib', 'knitr','plotly','MASS', 'splines', 'lubridate','devtools')
-packageHandler(packages)
+packages <- c('RCurl','reshape2','RColorBrewer','matlib', 'dummy','knitr','plotly','MASS', 'splines', 'lubridate','devtools')
+packageHandler(packages, update_packages = FALSE, install_packages = FALSE) #change to true if need to install any
 sapply(packages, library, quietly = TRUE, character.only = TRUE)
+
 
 #Set working directory: default to desktop--different path for windows vs Mac
 if(.Platform$OS.type == "windows") {
