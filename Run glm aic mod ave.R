@@ -308,16 +308,41 @@ htmlwidgets::saveWidget(plotlies, paste0(output_directory,'plottly.plots.', coun
 
 }
 
-      #combine together  pointwise RR from all strata
-      all.rr.t<-abind(rr.post.t,along=3 )
-      dimnames(all.rr.t)[[3]]<-reg.names
-      matplot(log(all.rr.t[,2,]), type='l', col='gray',xlab="Date", ylab="Rate Ratio", bty='l')
-      abline(h=0)
-           
-      #Combine together RR estimates during eval period
-      all.rr.post<-t(abind(rr.post.q,along=2 ))
-      plot(1:nrow(all.rr.post), all.rr.post[,2],type='p', bty='l', pch=16, ylim=c(0.4,1.5), xlab="", ylab="Rate Ratio")
-      arrows(1:nrow(all.rr.post),all.rr.post[,1],1:nrow(all.rr.post[,]),all.rr.post[,3], code=3, angle=90, length=0.0,  col='gray')
-      abline(h=1)
-      title("RR during evaluation period")
-      
+if(country=="Brazil"){
+    kids<-which(substr(reg.names,1,2)=='09')
+  adults<-which(substr(reg.names,1,2)=='08')
+  #combine together  results from all states
+  all.rr.t<-abind(rr.post.t,along=3 )
+  dimnames(all.rr.t)[[3]]<-reg.names
+  matplot(log(all.rr.t[,2,kids]), type='l', col='gray')
+  abline(h=0)
+  matplot(log(all.rr.t[,2,adults]), type='l', col='gray')
+  abline(h=0)
+  
+  #Combine together RR estimates during eval period
+  all.rr.post<-t(abind(rr.post.q,along=2 ))
+  row.names(all.rr.post)<-reg.names
+  for(m in 1:2){
+    sel<-list(kids,adults)
+    labs<-c('<12m', '80+y')
+    s<-sel[[m]]
+    plot(1:nrow(all.rr.post[s,]), all.rr.post[s,2],type='p', bty='l', pch=16, ylim=c(0.4,1.5))
+    arrows(1:nrow(all.rr.post[s,]),all.rr.post[s,1],1:nrow(all.rr.post[s,]),all.rr.post[s,3], code=3, angle=90, length=0.0,  col='gray')
+    abline(h=1)
+    title(labs[m])
+  }
+}else{
+  #Generic plotting
+    #combine together  pointwise RR from all strata
+    all.rr.t<-abind(rr.post.t,along=3 )
+    dimnames(all.rr.t)[[3]]<-reg.names
+    matplot(log(all.rr.t[,2,]), type='l', col='gray',xlab="Date", ylab="Rate Ratio", bty='l')
+    abline(h=0)
+    
+    #Combine together RR estimates during eval period
+    all.rr.post<-t(abind(rr.post.q,along=2 ))
+    plot(1:nrow(all.rr.post), all.rr.post[,2],type='p', bty='l', pch=16, ylim=c(0.4,1.5), xlab="", ylab="Rate Ratio")
+    arrows(1:nrow(all.rr.post),all.rr.post[,1],1:nrow(all.rr.post[,]),all.rr.post[,3], code=3, angle=90, length=0.0,  col='gray')
+    abline(h=1)
+    title("RR during evaluation period")
+    }
