@@ -302,7 +302,7 @@ for(i in 1:length(model_weights_2) ) {
   j<-which(plot.order==i)
   plotlies <- add_trace(plotlies,x=time_points,y = pred.mean[,j] ,name = mods.covars[j],  mode = "lines",
                         evaluate = TRUE,line = list(color = col.plot[j]),  hoverinfo = 'text',
-                        text = paste0("RR:",format.mods.covars[j]," Weight ",round(aic.df$w_aic,2)[j]))  
+                         text = paste0(mods.covars[j]," RR:",format.mods.covars[j]," Weight ",round(aic.df$w_aic,2)[j]))  
 }           
 htmlwidgets::saveWidget(plotlies, paste0(output_directory,'plottly.plots.', country,strata.label, '.html' ))
 
