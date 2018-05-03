@@ -346,3 +346,5 @@ if(country=="Brazil"){
     abline(h=1)
     title("RR during evaluation period")
     }
+
+write.csv(all.rr.post,paste0(output_directory,"RR.post.aicw.csv"))
