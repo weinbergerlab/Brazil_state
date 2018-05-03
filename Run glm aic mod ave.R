@@ -123,12 +123,14 @@ if(ncol(ds)>4){
   names(covars.raw)<-names(ds)[4]
 }
 month_i <- as.factor(as.numeric(format(ds[, date_name][data_start:nrow(ds)], '%m')))
-spline <- setNames(as.data.frame(bs(1:nrow(covars.raw), knots = 5, degree = 3)), c('bs1', 'bs2', 'bs3', 'bs4'))
-year_2008 <- numeric(nrow(covars.raw))
-year_2008[1:nrow(covars.raw) >= match(as.Date('2008-01-01'), ds[, date_name])] <- 1
-data <- cbind.data.frame(year_2008, spline, month_i)
-trend <- lapply(covars.raw, getTrend, data = data)
-covars.raw <- covars.raw - trend
+  if(country=="Brazil"){
+  spline <- setNames(as.data.frame(bs(1:nrow(covars.raw), knots = 5, degree = 3)), c('bs1', 'bs2', 'bs3', 'bs4'))
+  year_2008 <- numeric(nrow(covars.raw))
+  year_2008[1:nrow(covars.raw) >= match(as.Date('2008-01-01'), ds[, date_name])] <- 1
+  data <- cbind.data.frame(year_2008, spline, month_i)
+  trend <- lapply(covars.raw, getTrend, data = data)
+  covars.raw <- covars.raw - trend
+  }
 
 pandemic <- ifelse(time_points == '2009-08-01', 1, ifelse(time_points == '2009-09-01', 1, 0))
 variance.covars<-apply(as.data.frame(covars.raw[1:(post.start.index-1),]),2,var, na.rm=TRUE)
