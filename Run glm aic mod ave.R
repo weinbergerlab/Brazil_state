@@ -2,10 +2,10 @@
 #rm(list=ls(all=TRUE))
 
 #These 2 packages need to be installed and loaded first
-install.packages('devtools')
-library(devtools)
-install.packages('abind')
-library(abind)
+#install.packages('devtools')
+require(devtools)
+#install.packages('abind')
+require(abind)
 
 #read in function file--can read directly from github using devtools function 'source_url'
 source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
