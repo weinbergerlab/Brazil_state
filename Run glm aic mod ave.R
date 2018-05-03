@@ -265,7 +265,7 @@ rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))
 ##################################
 ##################################
 #STEP 5: PLOT RESULTS
-pdf(paste0(output_directory, 'plots_', country, ".pdf"), width=7, height=5)
+pdf(paste0(output_directory, 'plots_', country,strata.label, ".pdf"), width=7, height=5)
 
 #Plot observed vs expected +/- 95% CI
 matplot(preds.q, type='l', lty=c(2,1,2), col='black', bty='l', ylim=c(0,max(preds.q)))
