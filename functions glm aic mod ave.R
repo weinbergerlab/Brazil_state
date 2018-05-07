@@ -48,7 +48,6 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
   colnames(trend) <- c(paste(colnames(new),".trend.",t.windows,sep=""))
   return(trend)
 }
-
 glm.fun<-function(ds.fit.fun){
   mod1<-glm.nb(y ~ . , data=ds.fit.fun, control=glm.control(maxit = 2000))
   aic.test<-AIC( mod1)
@@ -56,7 +55,7 @@ glm.fun<-function(ds.fit.fun){
   coef1<-coef(mod1)
   theta<-mod1$theta
   pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
-  test.var<-names(ds.fit.fun)[length(ds.fit.fun)]
+  test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
   glm.out<-list(aic.test, V, coef1, pred.mean,test.var,theta) #save output in a named list
   names(glm.out)<-c('aic.test','V','coef1','pred.mean', 'test.var','theta')
   return(glm.out)
