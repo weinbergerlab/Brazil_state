@@ -39,7 +39,7 @@ data_start_date <- as.Date('2004-01-01')   #When do you want the analysis to sta
 data_intervention_start<-as.Date('2010-01-01')   #When is the intervention introduced?  (yyyy-mm-01)
 n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
 N.sim=10000 #total number of random draws for the predictive distribution
-bivariate=TRUE  #two control variables or 1 in regression?
+bivariate=FALSE  #two control variables or 1 in regression?
 #################################################
 #IMPORT DATA 
 #(sample data pulled directly from github)
