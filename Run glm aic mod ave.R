@@ -40,6 +40,7 @@ data_intervention_start<-as.Date('2010-01-01')   #When is the intervention intro
 n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
 N.sim=10000 #total number of random draws for the predictive distribution
 bivariate=FALSE  #two control variables or 1 in regression?
+season.control='dummy'  #can either by 'harmonic' or 'dummy'
 #################################################
 #IMPORT DATA 
 #(sample data pulled directly from github)
@@ -185,6 +186,10 @@ for(k in 1:length(reg.names)){
   season.dummies<-season.dummies[,-n_seasons]
   dimnames(season.dummies)[[2]]<-paste0('m',1:(n_seasons-1))
   predictors<-as.matrix(covars)
+    #Altrnatively, use harmonics
+  index=1:length(time_points)
+  sint1<-sin(2*pi*index/n_seasons)
+  cost1<-cos(2*pi*index/n_seasons)
   #predictors <-cbind(predictors, ifelse(time_points == '2009-08-01', 1, ifelse(time_points == '2009-09-01', 1, 0)))
   #dimnames(predictors)[[2]][ncol(predictors)]<-'pandemic'
   if(country=='Fiji'){
@@ -195,7 +200,10 @@ for(k in 1:length(reg.names)){
   outcome.pre<-outcome
   outcome.pre[post.start.index:length(outcome)]<-NA
   #COMBINE MONTHLY DUMMIES AND COVARIATES AND PANDEMIC INTO SINGLE DATAFRAME
-  covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
+  if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
+  }else{
+    covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
+  }
   covar.lab<-dimnames(covar.matrix)[[2]]
   time<-1:nrow(data.sel)
   time_post<-(time[post.start.index:length(outcome)]-post.start.index+1)/100
@@ -232,9 +240,17 @@ for(k in 1:length(reg.names)){
   names(data.fit)[1]<-'y'
   for(p in 1:length(combos3)){
     if(grepl('nocovars',  combos3[p] )) {
+      if (season.control=='dummy'){
       incl.names<-c('y','m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic' ) #NULL MODEL
+      }else{
+        incl.names<-c('y','sint1','cost1','pandemic' ) #NULL MODEL
+      }
     }else{
+    if(season.control=='dummy'){
       incl.names<-c('y','m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic', combos3[p] )
+      }else{
+        incl.names<-c('y','sint1','cost1','pandemic', combos3[p]  ) 
+      }
     }
     keep.cols<-which(names(data.fit) %in% incl.names )
     ds.fit[[p]]<-data.fit[,keep.cols]
