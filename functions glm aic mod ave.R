@@ -63,7 +63,11 @@ glm.fun<-function(ds.fit.fun){
 
 #Samples for parameter uncertainty piece
 param.uncertainty<-function(param.ds){
+    if(param.ds$test.var!='nocovars'){
   incl.names<-c('m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic', param.ds$test.var )
+  }else{
+    incl.names<-c('m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic' )
+  }
   keep.cols<-which(names(data.fit) %in% incl.names )
   covars3<-cbind.data.frame(rep(1, times=nrow(data.fit)), data.fit[,keep.cols])
   names(covars3)[1]<-"Intercept"
