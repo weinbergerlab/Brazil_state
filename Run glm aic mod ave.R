@@ -289,6 +289,8 @@ for(k in 1:length(reg.names)){
   
   #COMBINE PRED FROM ALL MODELS
   all.preds<-do.call(cbind, preds.stage2)
+  all.preds<-all.preds[ , colSums(is.na(all.preds)) == 0]
+
   preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t[[k]]<- outcome/preds.q
   
@@ -300,10 +302,12 @@ for(k in 1:length(reg.names)){
   rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))
   
   
+
   #point estimate for RR for each model
-  post.preds.mod<-pred.mean[post.start.index:nrow(all.preds),]
+  post.preds.mod<-all.preds[post.start.index:nrow(all.preds),]
   pred.mean.mod.post<-apply(post.preds.mod,2,sum)
-  rr.mean.post.mod<- post.obs.sum/pred.mean.mod.post
+  rr.mean.post.mod.samp<- post.obs.sum/pred.mean.mod.post
+  rr.mean.post.mod<-quantile(rr.mean.post.mod.samp, probs=c(0.025,0.5,0.975))
   ##################################
   ##################################
   #STEP 5: PLOT RESULTS
