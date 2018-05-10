@@ -68,4 +68,4 @@ obs.uncertainty<-function(param.ds){
   mod1<-  param.ds$mod1
   preds.stage2<-simulate(mod1, nsim=N.sim, newdata=ds.fit.fun, allow.new.levels=TRUE,re.form=NA)
   }
-}
+
