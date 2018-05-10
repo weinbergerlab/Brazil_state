@@ -98,7 +98,7 @@ obs.uncertainty<-function(stage1.ds){
   #replicate mean vector N.draws.stage2 times 
   preds.stage1.rep<-preds.stage1[,rep(seq_len(ncol(preds.stage1)), as.vector(N.draws.stage2)  )]
   preds.stage1.rep<-matrix(preds.stage1.rep, nrow=nrow(preds.stage1), ncol=Nsamps)
-  preds.stage2 <- rpois( n=length(preds.stage1.rep), lambda=exp(preds.stage1.rep))
+  preds.stage2 <- rnegbin(exp(preds.stage1.rep), theta = stage1.ds$theta) #hack, using approximate dispersion
   preds.stage2 <-matrix(preds.stage2, nrow=nrow(preds.stage1.rep), ncol=ncol(preds.stage1.rep))
   }
 }
