@@ -111,6 +111,7 @@ for(k in 1:length(reg.names)){
   data_start <- match(data_start_date, ds$date)
   time_points <- ds$date[data_start:nrow(ds)]
   post.start.index<-which(time_points==pre_period[2]+1)
+  eval.start.index<-which(time_points==eval_period[1])
   
   if(ncol(ds)>=4){
     covars.raw <- as.data.frame(ds[data_start:nrow(ds), 4:ncol(ds)])
@@ -305,7 +306,7 @@ for(k in 1:length(reg.names)){
   
 
   #point estimate for RR for each model
-  post.preds.mod<-all.preds[post.start.index:nrow(all.preds),]
+  post.preds.mod<-all.preds[eval.start.index:nrow(all.preds),]
   pred.mean.mod.post<-apply(post.preds.mod,2,sum)
   rr.mean.post.mod.samp<- post.obs.sum/pred.mean.mod.post
   rr.mean.post.mod<-quantile(rr.mean.post.mod.samp, probs=c(0.025,0.5,0.975))
