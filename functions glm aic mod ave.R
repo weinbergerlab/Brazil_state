@@ -49,6 +49,7 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
   return(trend)
 }
 glm.fun<-function(ds.fit.fun){
+  covars.fit<-ds.fit.fun[-1]
   mod1<-glm.nb(y ~ . , data=ds.fit.fun, control=glm.control(maxit = 2000))
   aic.test<-AIC( mod1)
   V<- vcov( mod1)
@@ -56,28 +57,15 @@ glm.fun<-function(ds.fit.fun){
   theta<-mod1$theta
   pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
   test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
-  glm.out<-list(aic.test, V, coef1, pred.mean,test.var,theta) #save output in a named list
-  names(glm.out)<-c('aic.test','V','coef1','pred.mean', 'test.var','theta')
+  glm.out<-list(covars.fit,aic.test, V, coef1, pred.mean,test.var,theta) #save output in a named list
+  names(glm.out)<-c('covars.fit','aic.test','V','coef1','pred.mean', 'test.var','theta')
   return(glm.out)
 }
 
 #Samples for parameter uncertainty piece
 param.uncertainty<-function(param.ds){
-    if(param.ds$test.var=='nocovars'){
-	    if (season.control=='dummy'){
-  		incl.names<-c('m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic' ) #NULL MODEL
-	    }else{
-  		incl.names<-c('sint1','cost1','pandemic' ) #NULL MODEL
-       }
-     }else{
-  if (season.control=='dummy'){
-    incl.names<-c('m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic', param.ds$test.var  )
-  }else{
-    incl.names<-c('sint1','cost1','pandemic', param.ds$test.var  ) 
-  }
-}
-  keep.cols<-which(names(data.fit) %in% incl.names )
-  covars3<-cbind.data.frame(rep(1, times=nrow(data.fit)), data.fit[,keep.cols])
+   
+  covars3<-cbind.data.frame(rep(1, times=nrow(data.fit)), param.ds$covars.fit)
   names(covars3)[1]<-"Intercept"
   N.draws.stage1<- round(sqrt(param.ds$Nsamps))
   if(N.draws.stage1>0){
