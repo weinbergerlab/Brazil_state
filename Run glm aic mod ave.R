@@ -69,6 +69,7 @@ reg.names<-names(d1.list)
 rr.post.q<- vector("list", length(reg.names)) 
 rr.post.t<- vector("list", length(reg.names)) 
 aic.df.save <- vector("list", length(reg.names)) 
+quantiles<-<- vector("list", length(reg.names))
 set.seed(123) #set random seed
 ###########LOOOP BY STATE
 for(k in 1:length(reg.names)){
@@ -308,6 +309,14 @@ for(k in 1:length(reg.names)){
   pred.mean.mod.post<-apply(post.preds.mod,2,sum)
   rr.mean.post.mod.samp<- post.obs.sum/pred.mean.mod.post
   rr.mean.post.mod<-quantile(rr.mean.post.mod.samp, probs=c(0.025,0.5,0.975))
+  
+  log_rr_full_t<-log((outcome+0.5)/(all.preds+0.5))
+  log_rr_full_t_quantiles<-apply(log_rr_full_t,1, quantile, probs=c(0.025,0.5,0.975))
+  log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
+  log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
+  log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
+  quantiles[[k]]<-list(outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight )
+  
   ##################################
   ##################################
   #STEP 5: PLOT RESULTS
@@ -355,3 +364,5 @@ for(k in 1:length(reg.names)){
   htmlwidgets::saveWidget(plotlies, paste0(output_directory,'plottly.plots.', country,strata.label, '.html' ))
   
 }
+results<- quantiles
+saveRDS(results,'./log_rr_sim.rds' )
