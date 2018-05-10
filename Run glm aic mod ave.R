@@ -69,7 +69,7 @@ reg.names<-names(d1.list)
 rr.post.q<- vector("list", length(reg.names)) 
 rr.post.t<- vector("list", length(reg.names)) 
 aic.df.save <- vector("list", length(reg.names)) 
-quantiles<-<- vector("list", length(reg.names))
+quantiles<- vector("list", length(reg.names))
 set.seed(123) #set random seed
 ###########LOOOP BY STATE
 for(k in 1:length(reg.names)){
@@ -286,6 +286,8 @@ for(k in 1:length(reg.names)){
   #Sample as in lauer et al PNAS--first sample from covariance matrix of individual model (100x), then do negbin sampling from 
   aic.df$Nsamps<- rmultinom(n=1,size=N.sim, prob=aic.df$w_aic) #How many samples do we want from each model in total?
   for(i in 1:nrow(aic.df)){glm.results[[i]]$Nsamps<-aic.df$Nsamps[i,1]}
+  model.weight<-aic.df[,c('covars','w_aic', 'model.rank')]
+  model.weight<-model.weight[order(-model.weight$w_aic),]
   
   preds.stage2<-lapply(glm.results,obs.uncertainty)
   
