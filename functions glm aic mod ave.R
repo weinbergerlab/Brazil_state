@@ -50,7 +50,7 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
 }
 glm.fun<-function(ds.fit.fun){
   covars.fit<-ds.fit.fun[-1]
-  mod1<-glm.nb(y ~ . , data=ds.fit.fun, control=glm.control(maxit = 2000))
+  mod1<-glm.nb(y ~ . , data=ds.fit.fun, control=glm.control(maxit = 2000), init.theta=1)
   aic.test<-AIC( mod1)
   V<- vcov( mod1)
   coef1<-coef(mod1)
