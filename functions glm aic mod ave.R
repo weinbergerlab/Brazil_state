@@ -64,15 +64,15 @@ glm.fun<-function(ds.fit.fun){
 #Samples for parameter uncertainty piece
 param.uncertainty<-function(param.ds){
     if(param.ds$test.var!='nocovars'){if (season.control=='dummy'){
-  incl.names<-c('y','m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic' ) #NULL MODEL
+  incl.names<-c('m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic' ) #NULL MODEL
 }else{
-  incl.names<-c('y','sint1','cost1','pandemic' ) #NULL MODEL
+  incl.names<-c('sint1','cost1','pandemic' ) #NULL MODEL
 }
 }else{
   if (season.control=='dummy'){
-    incl.names<-c('y','m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic', param.ds$test.var  )
+    incl.names<-c('m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic', param.ds$test.var  )
   }else{
-    incl.names<-c('y','sint1','cost1','pandemic', param.ds$test.var  ) 
+    incl.names<-c('sint1','cost1','pandemic', param.ds$test.var  ) 
   }
 }
   keep.cols<-which(names(data.fit) %in% incl.names )
