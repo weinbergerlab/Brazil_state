@@ -65,7 +65,12 @@ return(glm.out)
 obs.uncertainty<-function(param.ds){
   mod1<-  param.ds$mod1
   ds.fit.fun<-param.ds$ds.fit.fun
-  preds.stage2<-simulate(mod1, nsim=N.sim, newdata=ds.fit.fun, allow.new.levels=TRUE,re.form=NA)
+  N.samps<-param.ds$Nsamps
+  if(N.samps>1){
+  preds.stage2<-simulate(mod1, nsim=N.samps, newdata=ds.fit.fun, allow.new.levels=TRUE,re.form=NA)
+  }else{
+    preds.stage2<-NA
+  }
 }
 
 
