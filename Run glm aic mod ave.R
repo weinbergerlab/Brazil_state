@@ -269,6 +269,7 @@ for(k in 1:length(reg.names)){
   vars<-unlist(lapply(glm.results, '[[', 'test.var'))  # This returns a vector with the variable names
   pred.mean<-lapply(glm.results, '[[', 'pred.mean') # This returns a vector with the variable names
   pred.mean<-do.call(cbind,pred.mean)
+  pred.mean<-exp(pred.mean)
   aic.df<-cbind.data.frame(vars, aics)
   names(aic.df)<-c('covars','aic')
   aic.df$model.index<-1:nrow(aic.df)
