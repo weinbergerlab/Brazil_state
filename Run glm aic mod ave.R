@@ -285,8 +285,7 @@ for(k in 1:length(reg.names)){
   aic.df$Nsamps<- rmultinom(n=1,size=N.sim, prob=aic.df$w_aic) #How many samples do we want from each model in total?
   for(i in 1:nrow(aic.df)){glm.results[[i]]$Nsamps<-aic.df$Nsamps[i,1]}
   
-  param1<-lapply(glm.results,param.uncertainty)
-  preds.stage2<-lapply(param1,obs.uncertainty)
+  preds.stage2<-lapply(glm.results,obs.uncertainty)
   
   #COMBINE PRED FROM ALL MODELS
   all.preds<-do.call(cbind, preds.stage2)
