@@ -49,52 +49,29 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
   return(trend)
 }
 glm.fun<-function(ds.fit.fun){
-  covars.fit<-ds.fit.fun[-1]
-  mod1<-glm.nb(y ~ . , data=ds.fit.fun, control=glm.control(maxit = 2000), init.theta=1)
-  aic.test<-AIC( mod1)
-  V<- vcov( mod1)
-  coef1<-coef(mod1)
-  theta<-mod1$theta
-  pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
-  test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
-  glm.out<-list(covars.fit,aic.test, V, coef1, pred.mean,test.var,theta) #save output in a named list
-  names(glm.out)<-c('covars.fit','aic.test','V','coef1','pred.mean', 'test.var','theta')
-  return(glm.out)
+covars.fit<-ds.fit.fun[-1]
+pre.index<-1:(post.start.index-1)
+fixed.effects<-paste(names(ds.fit.fun)[-1], collapse="+")
+ds.fit.fun$obs<-as.factor(1:nrow(ds.fit.fun))
+form1<-as.formula(paste0('y~', fixed.effects, "+ (1|obs)" ))
+mod1<-glmer(form1,data=ds.fit.fun[pre.index,], family='poisson')
+pred.mean<-predict(mod1, newdata=ds.fit.fun,re.form=NA )
+aic.test<-AIC( mod1)
+test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
+glm.out<-list(pred.mean,ds.fit.fun, mod1,aic.test, test.var) #save output in a named list
+names(glm.out)<-c('pred.mean','ds.fit.fun','mod1','aic.test','test.var')
+return(glm.out)
 }
 
-#Samples for parameter uncertainty piece
-param.uncertainty<-function(param.ds){
-   
-  covars3<-cbind.data.frame(rep(1, times=nrow(data.fit)), param.ds$covars.fit)
-  names(covars3)[1]<-"Intercept"
-  N.draws.stage1<- round(sqrt(param.ds$Nsamps))
-  if(N.draws.stage1>0){
-    #In stage 1, generate N1 samples from parameter distribution and multiply by covariates to get pred
-    pred.coefs<- mvrnorm(n = N.draws.stage1, mu=param.ds$coef1, Sigma=param.ds$V)
-    if(N.draws.stage1==1){preds.stage1<- as.matrix(covars3) %*% pred.coefs
-    }else{  
-      preds.stage1<- as.matrix(covars3) %*% t(pred.coefs) #the number of columns in the first matrix has to be equal to the number of rows in the second matrix 
-    }
+obs.uncertainty<-function(param.ds){
+  mod1<-  param.ds$mod1
+  ds.fit.fun<-param.ds$ds.fit.fun
+  N.samps<-param.ds$Nsamps
+  if(N.samps>=1){
+  preds.stage2<-simulate(mod1, nsim=N.samps, newdata=ds.fit.fun, allow.new.levels=TRUE,re.form=NA)
   }else{
-    preds.stage1<-NA
+    preds.stage2<-NA
   }
-  stage1.results<-list(N.draws.stage1, preds.stage1,param.ds$Nsamps,param.ds$theta)
-  names(stage1.results)<-c('N.draws.stage1','preds.stage1',"Nsamps",'theta')
-  return(stage1.results)
 }
 
-#Second stage sampling to add on observation uncertainty from negbin distribution
-obs.uncertainty<-function(stage1.ds){
-  N.draws.stage1<-stage1.ds$N.draws.stage1
-  Nsamps<-stage1.ds$Nsamps
-  if(Nsamps>0){
-  preds.stage1<-stage1.ds$preds.stage1
-  #In stage 2, take prediction from stage 1 and sample N2 timesfrom negbin
-  N.draws.stage2<-rmultinom(1,prob=rep(1/N.draws.stage1, times=N.draws.stage1), size=Nsamps)
-  #replicate mean vector N.draws.stage2 times 
-  preds.stage1.rep<-preds.stage1[,rep(seq_len(ncol(preds.stage1)), as.vector(N.draws.stage2)  )]
-  preds.stage1.rep<-matrix(preds.stage1.rep, nrow=nrow(preds.stage1), ncol=Nsamps)
-  preds.stage2 <- rnegbin(exp(preds.stage1.rep), theta = stage1.ds$theta)
-  preds.stage2 <-matrix(preds.stage2, nrow=nrow(preds.stage1.rep), ncol=ncol(preds.stage1.rep))
-  }
-}
+

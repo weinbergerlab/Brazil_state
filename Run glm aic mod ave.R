@@ -186,7 +186,7 @@ for(k in 1:length(reg.names)){
   season.dummies<-season.dummies[,-n_seasons]
   dimnames(season.dummies)[[2]]<-paste0('m',1:(n_seasons-1))
   predictors<-as.matrix(covars)
-    #Altrnatively, use harmonics
+   #Altrnatively, use harmonics
   index=1:length(time_points)
   sint1<-sin(2*pi*index/n_seasons)
   cost1<-cos(2*pi*index/n_seasons)
@@ -205,11 +205,15 @@ for(k in 1:length(reg.names)){
     covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
   }
   covar.lab<-dimnames(covar.matrix)[[2]]
+ covar.matrix<-apply(covar.matrix,2,scale)
+
   time<-1:nrow(data.sel)
   time_post<-(time[post.start.index:length(outcome)]-post.start.index+1)/100
   data.fit<-cbind.data.frame(outcome.pre, covar.matrix)
   data.fit$outcome.pre<-as.integer(data.fit$outcome.pre)
   one<-rep(1,times=nrow(data.fit))
+  
+  
   
   #INITIALIZE VARIOUS LISTS TO STORE RESULTS
   aic.test <- vector(mode="numeric", length=ncol(covars))
@@ -265,6 +269,7 @@ for(k in 1:length(reg.names)){
   vars<-unlist(lapply(glm.results, '[[', 'test.var'))  # This returns a vector with the variable names
   pred.mean<-lapply(glm.results, '[[', 'pred.mean') # This returns a vector with the variable names
   pred.mean<-do.call(cbind,pred.mean)
+  pred.mean<-exp(pred.mean)
   aic.df<-cbind.data.frame(vars, aics)
   names(aic.df)<-c('covars','aic')
   aic.df$model.index<-1:nrow(aic.df)
@@ -285,6 +290,8 @@ for(k in 1:length(reg.names)){
   
   #COMBINE PRED FROM ALL MODELS
   all.preds<-do.call(cbind, preds.stage2)
+  all.preds<-all.preds[ , colSums(is.na(all.preds)) == 0]
+
   preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t[[k]]<- outcome/preds.q
   
@@ -296,10 +303,12 @@ for(k in 1:length(reg.names)){
   rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))
   
   
+
   #point estimate for RR for each model
-  post.preds.mod<-pred.mean[post.start.index:nrow(all.preds),]
+  post.preds.mod<-all.preds[post.start.index:nrow(all.preds),]
   pred.mean.mod.post<-apply(post.preds.mod,2,sum)
-  rr.mean.post.mod<- post.obs.sum/pred.mean.mod.post
+  rr.mean.post.mod.samp<- post.obs.sum/pred.mean.mod.post
+  rr.mean.post.mod<-quantile(rr.mean.post.mod.samp, probs=c(0.025,0.5,0.975))
   ##################################
   ##################################
   #STEP 5: PLOT RESULTS
