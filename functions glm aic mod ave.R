@@ -48,20 +48,21 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
   colnames(trend) <- c(paste(colnames(new),".trend.",t.windows,sep=""))
   return(trend)
 }
+#Simple Poisson model; note: tried glmer with bs random intercept--did not converge consistently in different datasets
 glm.fun<-function(ds.fit.fun){
-covars.fit<-ds.fit.fun[-1]
-fixed.effects<-paste(names(ds.fit.fun)[-1], collapse="+")
-form1<-as.formula(paste0('y~', fixed.effects, '+ (1|obs)'  ))
-ds.fit.fun$obs<-as.factor(1:nrow(ds.fit.fun))
-mod1<-glmer(form1, data=ds.fit.fun , family='poisson')
-aic.test<-AIC( mod1)
-V<- vcov( mod1)
-coef1<-fixef(mod1)
-theta<-sqrt(sapply(VarCorr(mod1), diag))[1]
-pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
-test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
-glm.out<-list(covars.fit,aic.test, V, coef1, pred.mean,test.var,theta) #save output in a named list
-names(glm.out)<-c('covars.fit','aic.test','V','coef1','pred.mean', 'test.var','theta')
+  covars.fit<-ds.fit.fun[-1]
+  fixed.effects<-paste(names(ds.fit.fun)[-1], collapse="+")
+  form1<-as.formula(paste0('y~', fixed.effects ))
+  ds.fit.fun$obs<-as.factor(1:nrow(ds.fit.fun))
+  mod1<-glm(form1, data=ds.fit.fun , family='poisson')
+  aic.test<-AIC( mod1)
+  V<- vcov( mod1)
+  coef1<-coef(mod1)
+  theta<-mod1$deviance/mod1$df.residual #overdispersion
+  pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
+  test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
+  glm.out<-list(covars.fit,aic.test, V, coef1, pred.mean,test.var,theta) #save output in a named list
+  names(glm.out)<-c('covars.fit','aic.test','V','coef1','pred.mean', 'test.var','theta')
   return(glm.out)
 }
 
