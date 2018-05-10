@@ -315,7 +315,7 @@ for(k in 1:length(reg.names)){
   log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
   log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
   log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
-  quantiles[[k]]<-list(outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight )
+  quantiles[[k]]<-list(rr.mean.post.mod, outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight )
   
   ##################################
   ##################################
