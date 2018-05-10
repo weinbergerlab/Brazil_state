@@ -57,7 +57,6 @@ mod1<-glmer(form1, data=ds.fit.fun , family='poisson')
 aic.test<-AIC( mod1)
 V<- vcov( mod1)
 coef1<-fixef(mod1)
-theta<-mod1$theta
 theta<-sqrt(sapply(VarCorr(mod1), diag))[1]
 pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
 test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
