@@ -49,7 +49,6 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
   return(trend)
 }
 glm.fun<-function(ds.fit.fun){
- 
 covars.fit<-ds.fit.fun[-1]
 pre.index<-1:(post.start.index-1)
 fixed.effects<-paste(names(ds.fit.fun)[-1], collapse="+")
@@ -58,13 +57,15 @@ form1<-as.formula(paste0('y~', fixed.effects, "+ (1|obs)" ))
 mod1<-glmer(form1,data=ds.fit.fun[pre.index,], family='poisson')
 aic.test<-AIC( mod1)
 test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
-glm.out<-list(mod1,aic.test, test.var) #save output in a named list
-names(glm.out)<-c('mod1','aic.test','test.var')
+glm.out<-list(ds.fit.fun, mod1,aic.test, test.var) #save output in a named list
+names(glm.out)<-c('ds.fit.fun','mod1','aic.test','test.var')
 return(glm.out)
 }
 
 obs.uncertainty<-function(param.ds){
   mod1<-  param.ds$mod1
+  ds.fit.fun<-param.ds$ds.fit.fun
   preds.stage2<-simulate(mod1, nsim=N.sim, newdata=ds.fit.fun, allow.new.levels=TRUE,re.form=NA)
-  }
+}
+
 
