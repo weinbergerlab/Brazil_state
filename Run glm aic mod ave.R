@@ -181,6 +181,7 @@ for(k in 1:length(reg.names)){
   }
   x.df<-as.data.frame(as.factor(x))
   names(x.df)<-'m'
+  dummy<-dummy::dummy #resolves function name conflict with lme4
   season.dummies<-  as.numeric(as.character(as.matrix(dummy(x.df))))
   season.dummies<-matrix(season.dummies, nrow=length(time_points), ncol=n_seasons)
   season.dummies<-season.dummies[,-n_seasons]
