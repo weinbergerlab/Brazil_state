@@ -55,10 +55,11 @@ fixed.effects<-paste(names(ds.fit.fun)[-1], collapse="+")
 ds.fit.fun$obs<-as.factor(1:nrow(ds.fit.fun))
 form1<-as.formula(paste0('y~', fixed.effects, "+ (1|obs)" ))
 mod1<-glmer(form1,data=ds.fit.fun[pre.index,], family='poisson')
+pred.mean<-predict(mod1, newdata=ds.fit.fun,re.form=NA )
 aic.test<-AIC( mod1)
 test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
-glm.out<-list(ds.fit.fun, mod1,aic.test, test.var) #save output in a named list
-names(glm.out)<-c('ds.fit.fun','mod1','aic.test','test.var')
+glm.out<-list(pred.mean,ds.fit.fun, mod1,aic.test, test.var) #save output in a named list
+names(glm.out)<-c('pred.mean','ds.fit.fun','mod1','aic.test','test.var')
 return(glm.out)
 }
 
