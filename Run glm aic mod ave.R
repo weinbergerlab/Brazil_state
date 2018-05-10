@@ -365,4 +365,4 @@ for(k in 1:length(reg.names)){
   
 }
 results<- quantiles
-saveRDS(results,'./log_rr_sim.rds' )
+saveRDS(results,'./results.rds' )
