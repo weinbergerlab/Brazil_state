@@ -290,7 +290,8 @@ for(k in 1:length(reg.names)){
   aic.df<-aic.df[order(aic.df$model.index),]
   aic.df$Nsamps<- rmultinom(n=1,size=N.sim, prob=aic.df$w_aic) #How many samples do we want from each model in total?
   for(i in 1:nrow(aic.df)){glm.results[[i]]$Nsamps<-aic.df$Nsamps[i,1]}
-  
+  model.weight<-aic.df[,c('covars','w_aic', 'model.rank')]
+  model.weight<-model.weight[order(-model.weight$w_aic),]
   #top.covar in each set
   aic.df<-aic.df[order(aic.df$grp, -aic.df$w_aic),]
   top.covar.grp<-aic.df[!duplicated(aic.df$grp),]
