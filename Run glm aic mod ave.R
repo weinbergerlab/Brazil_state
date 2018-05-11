@@ -299,21 +299,16 @@ for(k in 1:length(reg.names)){
   preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t[[k]]<- outcome/preds.q
   
-  #rr during eval period
-  post.preds<-all.preds[post.start.index:nrow(all.preds),]
+   #rr during eval period
+  post.preds<-all.preds[eval.start.index:nrow(all.preds),]
   post.preds.sums<-apply(post.preds,2,sum)
-  post.obs.sum<-sum(outcome[post.start.index:nrow(all.preds)])
+  post.obs.sum<-sum(outcome[eval.start.index:nrow(all.preds)])
   post.rr<-post.obs.sum/post.preds.sums
-  rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))
-  
+  rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))            
+  rr.mean.post.mod<-rr.post.q[[k]]
   
 
   #point estimate for RR for each model
-  post.preds.mod<-all.preds[eval.start.index:nrow(all.preds),]
-  pred.mean.mod.post<-apply(post.preds.mod,2,sum)
-  rr.mean.post.mod.samp<- post.obs.sum/pred.mean.mod.post
-  rr.mean.post.mod<-quantile(rr.mean.post.mod.samp, probs=c(0.025,0.5,0.975))
-  
   log_rr_full_t<-log((outcome+0.5)/(all.preds+0.5))
   log_rr_full_t_quantiles<-apply(log_rr_full_t,1, quantile, probs=c(0.025,0.5,0.975))
   log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
