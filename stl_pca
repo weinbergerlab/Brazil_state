@@ -349,7 +349,7 @@ for(k in 1:length(reg.names)){
   log_rr_full_t_samples.prec.pca<-solve(log_rr_full_t_samples.covar.pca)
   quantiles[[k]]<-list(rr.mean.post.mod, outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight,
                        rr.mean.post.mod.pca, log_rr_full_t_quantiles.pca, log_rr_full_t_sd.pca,log_rr_full_t_samples.prec.pca)
-    names(quantiles[[k]])<- c('rr.mean.post.mod', 'outcome', 'log_rr_full_t_quantiles', 'log_rr_full_t_sd','log_rr_full_t_samples.prec',
+    names(quantiles[[k]])<- c('rr.mean.post.mod', 'outcome', 'log_rr_full_t_quantiles', 'log_rr_full_t_sd','log_rr_full_t_samples.prec','model.weight',
                             'rr.mean.post.mod.pca', 'log_rr_full_t_quantiles.pca', 'log_rr_full_t_sd.pca','log_rr_full_t_samples.prec.pca')
   ##################################
   ##################################
@@ -439,4 +439,9 @@ for(i in 1: length(results)){
   print(results[[i]][['rr.mean.post.mod']])
 }
 
+#Extract RR frm BMA or from PCA models to a new table
+rr.bma<-do.call(rbind, lapply(results,function(xl) xl$'rr.mean.post.mod') )
+rr.pca<-do.call(rbind, lapply(results,function(xl) xl$'rr.mean.post.mod.pca') )
+write.csv(rr.bma,'./rr.bma.csv')
+write.csv(rr.pca,'./rr.pca.csv')
 
