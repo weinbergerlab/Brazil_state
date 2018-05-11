@@ -320,12 +320,17 @@ for(k in 1:length(reg.names)){
   ##################################
   #STEP 5: PLOT RESULTS
    pdf(paste0(output_directory, 'plots_', country,strata.label, ".pdf"), width=7, height=5)
-  
+   
   #Plot observed vs expected +/- 95% CI
   matplot(preds.q, type='l', lty=c(2,1,2), col='black', bty='l', ylim=c(0,max(preds.q)))
   points(outcome)
-  title(reg.names[k])
   abline(v=post.start.index,col='gray', lty=2)
+  title(paste0(reg.names[k]," STL+PCA: Observed vs expected"))
+  
+  matplot(t(log_rr_full_t_quantiles),  type='l', lty=c(2,1,2), col='black', bty='l', ylab="Log(Rate Ratio)")
+  abline(h=0, col='gray', lty=2)
+  abline(v=post.start.index,col='gray', lty=2) 
+  title("STL+PCA:Log rate ratios")
   
   #
   #Plot expected from individual models vs observed
@@ -334,15 +339,13 @@ for(k in 1:length(reg.names)){
   matplot(pred.mean, type='l', col='gray', lty=1, bty='l')
   points(outcome)
   abline(v=post.start.index,col='gray', lty=2)
+  title("Predictions from individual variables")
   
   #by weight
   matplot(pred.mean, type='l', col=col.plot, lty=1, bty='l')
   points(outcome)
   abline(v=post.start.index,col='gray', lty=2)
-  
-  matplot(t(log_rr_full_t_quantiles),  type='l', lty=c(2,1,2), col='black', bty='l', ylab="Log(Rate Ratio)")
-  abline(h=0, col='gray', lty=2)
-  abline(v=post.start.index,col='gray', lty=2)
+  title("Predictions from individual variables; weighted by fit")
   
   dev.off()
   
