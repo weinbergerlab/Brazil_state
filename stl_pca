@@ -432,16 +432,10 @@ for(k in 1:length(reg.names)){
   
 }
 
-results<- quantiles
-saveRDS(results,'./results.rds' )
+saveRDS(quantiles,'./output_STL/results.rds' )
 
-for(i in 1: length(results)){
-  print(results[[i]][['rr.mean.post.mod']])
-}
-
-#Extract RR frm BMA or from PCA models to a new table
 rr.bma<-do.call(rbind, lapply(results,function(xl) xl$'rr.mean.post.mod') )
 rr.pca<-do.call(rbind, lapply(results,function(xl) xl$'rr.mean.post.mod.pca') )
-write.csv(rr.bma,'./rr.bma.csv')
-write.csv(rr.pca,'./rr.pca.csv')
+write.csv(rr.bma,'./output_STL/rr.bma.csv')
+write.csv(rr.pca,'./output_STL/rr.pca.csv')
 
