@@ -277,7 +277,7 @@ for(k in 1:length(reg.names)){
   pred.mean<-lapply(glm.results, '[[', 'pred.mean') # This returns a vector with the variable names
   pred.mean<-do.call(cbind,pred.mean)
   pred.mean<-exp(pred.mean)
-  aic.df<-cbind.data.frame(vars, aics)
+ aic.df<-cbind.data.frame(vars, aics)
   names(aic.df)<-c('covars','aic')
   aic.df$model.index<-1:nrow(aic.df)
   aic.df$grp<-as.numeric(as.factor(substr(aic.df$covars,1,3))) #for each smoothed or unsmoothed version of variable, assign it to a grouping 
@@ -290,13 +290,21 @@ for(k in 1:length(reg.names)){
   aic.df<-aic.df[order(aic.df$model.index),]
   aic.df$Nsamps<- rmultinom(n=1,size=N.sim, prob=aic.df$w_aic) #How many samples do we want from each model in total?
   for(i in 1:nrow(aic.df)){glm.results[[i]]$Nsamps<-aic.df$Nsamps[i,1]}
-  model.weight<-aic.df[,c('covars','w_aic', 'model.rank')]
-  model.weight<-model.weight[order(-model.weight$w_aic),]
   #top.covar in each set
   aic.df<-aic.df[order(aic.df$grp, -aic.df$w_aic),]
-  top.covar.grp<-aic.df[!duplicated(aic.df$grp),]
+  model.weight<-aic.df[,c('covars','w_aic', 'model.rank')]
+  model.weight<-model.weight[order(-model.weight$w_aic),]
+  model.weight$model.rank<-1:nrow(model.weight)
+  
+  aic.df2<-aic.df
+  aic.df2$deseason=0
+  aic.df2$deseason[grep('trend',aic.df2$covars, fixed=TRUE)] <- 1
+  aic.df2<-aic.df2[aic.df2$deseason==1,] #Only keep STL version of variable, not raw
+  aic.df2$w_aic<-aic.df2$w_aic/sum(aic.df2$w_aic) #rescale weights
+  top.covar.grp<-aic.df2[!duplicated(aic.df2$grp),]
   remove<-c('t','nocovars')
   top.covars<-as.character(top.covar.grp$covars[! top.covar.grp$covars %in% remove])
+ 
   
   ####Model averaging results
     preds.stage2<-lapply(glm.results,obs.uncertainty)
