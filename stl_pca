@@ -436,9 +436,9 @@ for(k in 1:length(reg.names)){
 names(quantiles)<-reg.names
 saveRDS(quantiles,'./output_STL/results.rds' )
 
-rr.bma<-do.call(rbind, lapply(results,function(xl) xl$'rr.mean.post.mod') )
+rr.bma<-do.call(rbind, lapply(quantiles,function(xl) xl$'rr.mean.post.mod') )
 rr.bma<-cbind.data.frame(reg.names,rr.bma)
-rr.pca<-do.call(rbind, lapply(results,function(xl) xl$'rr.mean.post.mod.pca') )
+rr.pca<-do.call(rbind, lapply(quantiles,function(xl) xl$'rr.mean.post.mod.pca') )
 rr.pca<-cbind.data.frame(reg.names,rr.pca)
 write.csv(rr.bma,'./output_STL/rr.bma.csv')
 write.csv(rr.pca,'./output_STL/rr.pca.csv')
