@@ -67,7 +67,9 @@ reg.names<-names(d1.list)
 
 #Initialize empty lists to store results
 rr.post.q<- vector("list", length(reg.names)) 
+rr.post.q.pca<- vector("list", length(reg.names)) 
 rr.post.t<- vector("list", length(reg.names)) 
+rr.post.t.pca<- vector("list", length(reg.names)) 
 aic.df.save <- vector("list", length(reg.names)) 
 quantiles<- vector("list", length(reg.names))
 set.seed(123) #set random seed
@@ -286,6 +288,8 @@ for(k in 1:length(reg.names)){
   aic.df$keep.high.weight<- aic.df$cumsum<=0.99  #only keep variables that contribute to 99% f weight
   aic.df$model.rank<- 1:nrow(aic.df)  #only keep variables that contribute to 99% f weight
   aic.df<-aic.df[order(aic.df$model.index),]
+  aic.df$Nsamps<- rmultinom(n=1,size=N.sim, prob=aic.df$w_aic) #How many samples do we want from each model in total?
+  for(i in 1:nrow(aic.df)){glm.results[[i]]$Nsamps<-aic.df$Nsamps[i,1]}
   
   #top.covar in each set
   aic.df<-aic.df[order(aic.df$grp, -aic.df$w_aic),]
@@ -293,8 +297,27 @@ for(k in 1:length(reg.names)){
   remove<-c('t','nocovars')
   top.covars<-as.character(top.covar.grp$covars[! top.covar.grp$covars %in% remove])
   
-  
-  ##################SETUP AND RUN MODELS WITH FIRST PC
+  ####Model averaging results
+    preds.stage2<-lapply(glm.results,obs.uncertainty)
+    all.preds<-do.call(cbind, preds.stage2)
+    all.preds<-all.preds[ , colSums(is.na(all.preds)) == 0]
+    preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
+    rr.post.t[[k]]<- outcome/preds.q
+    #rr during eval period
+    post.preds<-all.preds[eval.start.index:nrow(all.preds),]
+    post.preds.sums<-apply(post.preds,2,sum)
+    post.obs.sum<-sum(outcome[eval.start.index:nrow(all.preds)])
+    post.rr<-post.obs.sum/post.preds.sums
+    rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))            
+    rr.mean.post.mod<-rr.post.q[[k]]
+    #Pointwise CIs
+    log_rr_full_t<-log((outcome+0.5)/(all.preds+0.5))
+    log_rr_full_t_quantiles<-apply(log_rr_full_t,1, quantile, probs=c(0.025,0.5,0.975))
+    log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
+    log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
+    log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
+
+  ###SETUP AND RUN MODELS WITH FIRST PC
   covars.keep.pca<-covars[,top.covars]
   pca <- prcomp(covars.keep.pca, scale=TRUE) # scale=TRUE should be added!!
   predictors2 <- as.data.frame(pca$x[,1]) # First "1" PC
@@ -304,48 +327,63 @@ for(k in 1:length(reg.names)){
     covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, pandemic,predictors2)
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
-  
   mod1<-glmer(outcome.pre~ m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+pandemic+pca1 +(1|obs) ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
                                                                                        optCtrl=list(maxfun=2e5)) )
-  all.preds<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form=NA)
+  all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form=NA)
+  preds.q.pca<-t(apply(all.preds.pca, 1,quantile, probs=c(0.025,0.5,0.975)))
+  rr.post.t.pca[[k]]<- outcome/preds.q.pca
   
-  
-
-  preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
-  rr.post.t[[k]]<- outcome/preds.q
-  
-  #rr during eval period
-  post.preds<-all.preds[eval.start.index:nrow(all.preds),]
-  post.preds.sums<-apply(post.preds,2,sum)
+  #rr during eval period from PCA model
+  post.preds.pca<-all.preds.pca[eval.start.index:nrow(all.preds),]
+  post.preds.sums.pca<-apply(post.preds.pca,2,sum)
   post.obs.sum<-sum(outcome[eval.start.index:nrow(all.preds)])
-  post.rr<-post.obs.sum/post.preds.sums
-  rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))
-  
-  rr.mean.post.mod<-rr.post.q[[k]]
+  post.rr.pca<-post.obs.sum/post.preds.sums.pca
+  rr.post.q.pca[[k]]<-quantile(post.rr.pca,probs=c(0.025,0.5,0.975))
+  rr.mean.post.mod.pca<-rr.post.q.pca[[k]]
 
   #point estimate for RR for each model
-  log_rr_full_t<-log((outcome+0.5)/(all.preds+0.5))
-  log_rr_full_t_quantiles<-apply(log_rr_full_t,1, quantile, probs=c(0.025,0.5,0.975))
-  log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
-  log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
-  log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
-  quantiles[[k]]<-list(rr.mean.post.mod, outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec )
-  names(quantiles[[k]])<- c('rr.mean.post.mod', 'outcome', 'log_rr_full_t_quantiles', 'log_rr_full_t_sd','log_rr_full_t_samples.prec' )
+  log_rr_full_t.pca<-log((outcome+0.5)/(all.preds.pca+0.5))
+  log_rr_full_t_quantiles.pca<-apply(log_rr_full_t.pca,1, quantile, probs=c(0.025,0.5,0.975))
+  log_rr_full_t_sd.pca<-t(apply(log_rr_full_t.pca, 1, sd, na.rm = TRUE))
+  log_rr_full_t_samples.covar.pca<-cov(t(log_rr_full_t.pca))
+  log_rr_full_t_samples.prec.pca<-solve(log_rr_full_t_samples.covar.pca)
+  quantiles[[k]]<-list(rr.mean.post.mod, outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight,
+                       rr.mean.post.mod.pca, log_rr_full_t_quantiles.pca, log_rr_full_t_sd.pca,log_rr_full_t_samples.prec.pca)
+    names(quantiles[[k]])<- c('rr.mean.post.mod', 'outcome', 'log_rr_full_t_quantiles', 'log_rr_full_t_sd','log_rr_full_t_samples.prec',
+                            'rr.mean.post.mod.pca', 'log_rr_full_t_quantiles.pca', 'log_rr_full_t_sd.pca','log_rr_full_t_samples.prec.pca')
   ##################################
   ##################################
   #STEP 5: PLOT RESULTS
   pdf(paste0(output_directory, 'plots_', country,strata.label, ".pdf"), width=7, height=5)
   
   #Plot observed vs expected +/- 95% CI
-  matplot(preds.q, type='l', lty=c(2,1,2), col='black', bty='l', ylim=c(0,max(preds.q)))
+  matplot(preds.q.pca, type='l', lty=c(2,1,2), col='black', bty='l', ylim=c(0,max(preds.q)))
   points(outcome)
   abline(v=post.start.index,col='gray', lty=2)
   title(paste0(reg.names[k]," STL+PCA: Observed vs expected"))
   
-  matplot(t(log_rr_full_t_quantiles),  type='l', lty=c(2,1,2), col='black', bty='l', ylab="Log(Rate Ratio)")
+  matplot(preds.q, type='l', lty=c(2,1,2), col='black', bty='l', ylim=c(0,max(preds.q)))
+  points(outcome)
+  abline(v=post.start.index,col='gray', lty=2)
+  title(paste0(reg.names[k]," STL+BMA: Observed vs expected"))
+  
+  matplot(preds.q.pca, type='l', col='#af8dc3', lty=1, bty='l')
+  points(outcome)
+  points(preds.q[,'50%'], lty=1, col='#7fbf7b',type='l' )
+  points(preds.q[,'2.5%'], lty=2, col='#7fbf7b',type='l' )
+  points(preds.q[,'97.5%'], lty=2, col='#7fbf7b',type='l' )
+  abline(v=post.start.index,col='gray', lty=2)
+  title("Comparison of STL+BMA (green) with STL+PCA (purple)")
+  
+  matplot(t(log_rr_full_t_quantiles.pca),  type='l', lty=c(2,1,2), ylim=c(-1,1),col='black', bty='l', ylab="Log(Rate Ratio)")
   abline(h=0, col='gray', lty=2)
   abline(v=post.start.index,col='gray', lty=2) 
   title("STL+PCA:Log rate ratios")
+  
+  matplot(t(log_rr_full_t_quantiles),  type='l', lty=c(2,1,2), ylim=c(-1,1), col='black', bty='l', ylab="Log(Rate Ratio)")
+  abline(h=0, col='gray', lty=2)
+  abline(v=post.start.index,col='gray', lty=2) 
+  title("STL+BMA:Log rate ratios")
   
   #
   #Plot expected from individual models vs observed
@@ -362,16 +400,9 @@ for(k in 1:length(reg.names)){
   abline(v=post.start.index,col='gray', lty=2)
   title("Predictions from individual variables; weighted by fit")
   
-  matplot(pred.mean, type='l', col=col.plot, lty=1, bty='l')
-  points(outcome)
-  points(preds.q[,'50%'], lty=1, col='red',type='l' )
-  points(preds.q[,'2.5%'], lty=2, col='red',type='l' )
-  points(preds.q[,'97.5%'], lty=2, col='red',type='l' )
-  abline(v=post.start.index,col='gray', lty=2)
-  title("Predictions from individual variables; weighted by fit; with STL fit overlaid")
-  
 
-    dev.off()
+  
+  dev.off()
   
 
   
@@ -407,4 +438,5 @@ saveRDS(results,'./results.rds' )
 for(i in 1: length(results)){
   print(results[[i]][['rr.mean.post.mod']])
 }
+
 
