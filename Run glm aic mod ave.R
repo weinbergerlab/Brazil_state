@@ -203,12 +203,13 @@ for(k in 1:length(reg.names)){
   outcome.pre<-outcome
   outcome.pre[post.start.index:length(outcome)]<-NA
   #COMBINE MONTHLY DUMMIES AND COVARIATES AND PANDEMIC INTO SINGLE DATAFRAME
+ predictors<-apply(predictors,2,scale)
   if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
   }else{
     covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
   }
   covar.lab<-dimnames(covar.matrix)[[2]]
- covar.matrix<-apply(covar.matrix,2,scale)
+ 
 
   time<-1:nrow(data.sel)
   time_post<-(time[post.start.index:length(outcome)]-post.start.index+1)/100
