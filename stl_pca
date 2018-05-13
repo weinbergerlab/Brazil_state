@@ -297,6 +297,7 @@ for(k in 1:length(reg.names)){
   
   #top.covar in each set
   aic.df2<-aic.df
+  aic.df2<-aic.df2[order(-aic.df$w_aic),]
   aic.df2$deseason=0
   aic.df2$deseason[grep('trend',aic.df2$covars, fixed=TRUE)] <- 1
   aic.df2<-aic.df2[aic.df2$deseason==1,] #Only keep STL version of variable, not raw
