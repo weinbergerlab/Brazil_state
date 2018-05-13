@@ -64,7 +64,7 @@ obs.uncertainty<-function(param.ds){
   ds.fit.fun<-param.ds$ds.fit.fun
   N.samps<-param.ds$Nsamps
   if(N.samps>=1){
-  preds.stage2<-simulate(mod1, nsim=N.samps, newdata=ds.fit.fun)
+  preds.stage2<-simulate(mod1, nsim=N.samps, newdata=data.fit)
   }else{
     preds.stage2<-NA
   }
