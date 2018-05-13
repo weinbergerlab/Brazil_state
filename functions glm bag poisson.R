@@ -54,7 +54,7 @@ glm.fun<-function(ds.fit.fun){
   aic.test<-AIC( mod1)
   V<- vcov( mod1)
   coef1<-coef(mod1)
-  covars.fit<-names(ds.fit.fun)[-1]
+  covars.fit<-ds.fit.fun[,-1]
   pred.mean<- exp(predict(mod1, newdata=ds.fit.fun))
   test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
   glm.out<-list(covars.fit,aic.test, V, coef1, pred.mean,test.var) #save output in a named list
