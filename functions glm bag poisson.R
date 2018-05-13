@@ -50,7 +50,7 @@ DoSTL_trend <- function(new,t.windows,s.windows) {
 }
 glm.fun<-function(ds.fit.fun){
 
-mod1<-glm(y~.,data=ds.fit.fun[pre.index,], family='poisson' )
+mod1<-glm(y~.,data=ds.fit.fun, family='poisson' )
 pred.mean<-predict(mod1, newdata=ds.fit.fun )
 aic.test<-AIC( mod1)
 test.var<-   attributes(ds.fit.fun)$comment  #THIS IS DIFFERENT FOR BIVARIATE
