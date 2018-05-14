@@ -41,6 +41,8 @@ n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
 N.sim=10000 #total number of random draws for the predictive distribution
 bivariate=FALSE  #two control variables or 1 in regression?
 season.control='dummy'  #can either by 'harmonic' or 'dummy'
+N.buffer=24 #How many months before start evaluation?
+
 #################################################
 #IMPORT DATA 
 #(sample data pulled directly from github)
@@ -100,7 +102,7 @@ for(k in 1:length(reg.names)){
   post_period <- c(data_intervention_date + 1, data_end_date) #Define post-vaccine period
   #Define evaluation period
   
-  eval_period <- c( (data_end_date %m-% months(24)), data_end_date) #take last 24m as evaluation period
+  eval_period <- c( (data_intervention_start %m+% months(N.buffer)), data_end_date) #take period after buffer as evaluation period
   
   #Log transform covariates
   ds <- ds1a
