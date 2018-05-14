@@ -325,7 +325,7 @@ for(k in 1:length(reg.names)){
   ds.bag<- vector("list",  length=n.bags*n.resamps) #combine models into a list
   covars.bag<-vector("list",  length=n.bags) #combine models into a list
   detrended.vars<-  names(data.fit)[grep('trend',names(data.fit), fixed=TRUE)] 
-  years<-unique(year(d1$date))
+  years<-unique(year(in.data$date))
   years.pre<-years[years<year(data_intervention_start)]
   years.post<-years[years>=year(data_intervention_start)]
   names(data.fit)[1]<-'y'
