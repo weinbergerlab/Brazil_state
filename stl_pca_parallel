@@ -11,7 +11,7 @@ require(abind)
 source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
 #source('functions glm aic mod ave.R')
 
-packages <- c('RCurl','reshape2','RColorBrewer','matlib','lme4', 'dummy','knitr','plotly','MASS', 'splines', 'lubridate','devtools')
+packages <- c('RCurl','reshape2','RColorBrewer','matlib','lme4', 'dummy','knitr','plotly','MASS', 'parallel','splines', 'lubridate','devtools')
 packageHandler(packages, update_packages = FALSE, install_packages = FALSE) #change to true if need to install any
 sapply(packages, library, quietly = TRUE, character.only = TRUE)
 
@@ -268,7 +268,17 @@ for(k in 1:length(reg.names)){
   ######################################################################
   ######################################################################
   ##SECTION 4: RUN INITIAL UNIVARIATE MODELS 
-  glm.results<-lapply(ds.fit, glm.fun )
+  n_cores <- detectCores()-1
+  cl1 <- makeCluster(n_cores)
+  clusterEvalQ(cl1, {library(lme4, quietly = TRUE)})
+  clusterExport(cl1, c('ds.fit',  'glm.fun', 'time_points', 'n_seasons','post.start.index'), environment())
+  
+  glm.results<-parLapply(cl=cl1 ,     ds.fit, glm.fun )
+  stopCluster(cl1)
+  
+  #glm.results<-lapply(   ds.fit, glm.fun )
+  
+  
   #glm.results<-tryCatch(lapply(ds.fit, glm.fun ), error=function(e) lapply(ds.fit, glm.fun.pois ) ) 
   
   #Extract AICs from list into dataframe
@@ -305,28 +315,28 @@ for(k in 1:length(reg.names)){
   top.covar.grp<-aic.df2[!duplicated(aic.df2$grp),]
   remove<-c('t','nocovars')
   top.covars<-as.character(top.covar.grp$covars[! top.covar.grp$covars %in% remove])
- 
+  
   
   ####Model averaging results
-    preds.stage2<-lapply(glm.results,obs.uncertainty)
-    all.preds<-do.call(cbind, preds.stage2)
-    all.preds<-all.preds[ , colSums(is.na(all.preds)) == 0]
-    preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
-    rr.post.t[[k]]<- outcome/preds.q
-    #rr during eval period
-    post.preds<-all.preds[eval.start.index:nrow(all.preds),]
-    post.preds.sums<-apply(post.preds,2,sum)
-    post.obs.sum<-sum(outcome[eval.start.index:nrow(all.preds)])
-    post.rr<-post.obs.sum/post.preds.sums
-    rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))            
-    rr.mean.post.mod<-rr.post.q[[k]]
-    #Pointwise CIs
-    log_rr_full_t<-log((outcome+0.5)/(all.preds+0.5))
-    log_rr_full_t_quantiles<-apply(log_rr_full_t,1, quantile, probs=c(0.025,0.5,0.975))
-    log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
-    log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
-    log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
-
+  preds.stage2<-lapply(glm.results,obs.uncertainty)
+  all.preds<-do.call(cbind, preds.stage2)
+  all.preds<-all.preds[ , colSums(is.na(all.preds)) == 0]
+  preds.q<-t(apply(all.preds, 1,quantile, probs=c(0.025,0.5,0.975)))
+  rr.post.t[[k]]<- outcome/preds.q
+  #rr during eval period
+  post.preds<-all.preds[eval.start.index:nrow(all.preds),]
+  post.preds.sums<-apply(post.preds,2,sum)
+  post.obs.sum<-sum(outcome[eval.start.index:nrow(all.preds)])
+  post.rr<-post.obs.sum/post.preds.sums
+  rr.post.q[[k]]<-quantile(post.rr,probs=c(0.025,0.5,0.975))            
+  rr.mean.post.mod<-rr.post.q[[k]]
+  #Pointwise CIs
+  log_rr_full_t<-log((outcome+0.5)/(all.preds+0.5))
+  log_rr_full_t_quantiles<-apply(log_rr_full_t,1, quantile, probs=c(0.025,0.5,0.975))
+  log_rr_full_t_sd<-t(apply(log_rr_full_t, 1, sd, na.rm = TRUE))
+  log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
+  log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
+  
   ###SETUP AND RUN MODELS WITH FIRST PC
   covars.keep.pca<-covars[,top.covars]
   pca <- prcomp(covars.keep.pca, scale=TRUE) # scale=TRUE should be added!!
@@ -338,7 +348,7 @@ for(k in 1:length(reg.names)){
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
   mod1<-glmer(outcome.pre~ m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+pandemic+pca1 +(1|obs) ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
-                                                                                       optCtrl=list(maxfun=2e5)) )
+                                                                                                                                                   optCtrl=list(maxfun=2e5)) )
   all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form=NA)
   preds.q.pca<-t(apply(all.preds.pca, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t.pca[[k]]<- outcome/preds.q.pca
@@ -350,7 +360,7 @@ for(k in 1:length(reg.names)){
   post.rr.pca<-post.obs.sum/post.preds.sums.pca
   rr.post.q.pca[[k]]<-quantile(post.rr.pca,probs=c(0.025,0.5,0.975))
   rr.mean.post.mod.pca<-rr.post.q.pca[[k]]
-
+  
   #point estimate for RR for each model
   log_rr_full_t.pca<-log((outcome+0.5)/(all.preds.pca+0.5))
   log_rr_full_t_quantiles.pca<-apply(log_rr_full_t.pca,1, quantile, probs=c(0.025,0.5,0.975))
@@ -359,7 +369,7 @@ for(k in 1:length(reg.names)){
   log_rr_full_t_samples.prec.pca<-solve(log_rr_full_t_samples.covar.pca)
   quantiles[[k]]<-list(rr.mean.post.mod, outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight,
                        rr.mean.post.mod.pca, log_rr_full_t_quantiles.pca, log_rr_full_t_sd.pca,log_rr_full_t_samples.prec.pca)
-    names(quantiles[[k]])<- c('rr.mean.post.mod', 'outcome', 'log_rr_full_t_quantiles', 'log_rr_full_t_sd','log_rr_full_t_samples.prec','model.weight',
+  names(quantiles[[k]])<- c('rr.mean.post.mod', 'outcome', 'log_rr_full_t_quantiles', 'log_rr_full_t_sd','log_rr_full_t_samples.prec','model.weight',
                             'rr.mean.post.mod.pca', 'log_rr_full_t_quantiles.pca', 'log_rr_full_t_sd.pca','log_rr_full_t_samples.prec.pca')
   ##################################
   ##################################
@@ -410,11 +420,11 @@ for(k in 1:length(reg.names)){
   abline(v=post.start.index,col='gray', lty=2)
   title("Predictions from individual variables; weighted by fit")
   
-
+  
   
   dev.off()
   
-
+  
   
   ## MAKE THE INTERACTIVE PLOTLY PLOTS
   model_weights_2<-aic.df$w_aic
