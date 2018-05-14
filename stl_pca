@@ -48,7 +48,7 @@ git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/m
 d1 <- read.csv(text=git.data)
 ############################################  
 
-output_directory<-paste0(getwd(),'/output/')
+output_directory<-paste0(getwd(),'/output_STL/')
 dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
 
 
