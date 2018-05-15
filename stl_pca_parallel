@@ -145,7 +145,7 @@ for(k in 1:length(reg.names)){
   with.variation<-which(variance.covars>0)
   no.variation<-which(variance.covars==0)
   names.keep<-names(covars.raw)[with.variation]
-  if(length(no.variation)>0){covars.raw<-covin.data=ars.raw[,with.variation]} #eliminates covariates that have NO VARIABIITY IN PRE-PERIOD
+  if(length(no.variation)>0){covars.raw<-covars.raw[,with.variation]} #eliminates covariates that have NO VARIABIITY IN PRE-PERIOD
   covars.raw<-as.data.frame(covars.raw)
   names(covars.raw)<-names.keep
   
