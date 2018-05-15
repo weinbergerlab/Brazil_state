@@ -38,7 +38,12 @@ getTrend <- function(covar_vector, data) {
   names(trend) <- NULL
   return(trend)
 }
-
+#from STL package:
+ nextodd <- function(x){
+	x <- round(x)
+	if(x%%2==0) x <- x+1
+	as.integer(x)
+    }
 DoSTL_trend <- function(new,t.windows,s.windows) {
   trend <- as.data.frame(matrix(NA, nrow=nrow(new), ncol=ncol(new)))
   for (j in 1:ncol(new)) {
