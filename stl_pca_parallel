@@ -8,7 +8,7 @@ require(devtools)
 require(abind)
 
 #read in function file--can read directly from github using devtools function 'source_url'
-source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
+source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_hospital_state/master/functions%20glm%20aic%20mod%20ave.R")      
 #source('functions glm aic mod ave.R')
 
 packages <- c('RCurl','reshape2','RColorBrewer','matlib','lme4', 'dummy','knitr','plotly','MASS', 'parallel','splines', 'lubridate','devtools')
@@ -30,7 +30,7 @@ source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/
 #source('functions glm aic mod ave.R')
 
 ###############USER SPECIFIED VALUES
-country="Brazil"
+country="Brazil_hospital"
 all_cause_name <- 'ach_noj'
 all_cause_pneu_name <- 'J12_18'
 noj_name <- 'cJ20_J22'
@@ -46,7 +46,7 @@ N.buffer=24 #How many months before start evaluation?
 #################################################
 #IMPORT DATA 
 #(sample data pulled directly from github)
-git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/prelog_Brazil_state_processed_data.csv")      
+git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_hospital_state/master/prelog_Brazil_hospital_state_processed_data.csv")      
 d1 <- read.csv(text=git.data)
 ############################################  
 
@@ -57,7 +57,7 @@ dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
 d1.list<-split(d1,d1$age_group)
 names(d1.list)
 
-if(country %in% c("Brazil","Brazil_state")){
+if(country %in% c("Brazil_hospital","Brazil_hospital_state")){
   agegrp02<-which(substr(names(d1.list),1,2)=="02")
   d1.list<-d1.list[-agegrp02]
 }
@@ -83,7 +83,7 @@ for(k in 1:length(reg.names)){
   #SECTION 1: IMPORTING AND FORMATTING TIME SERIES
   
   strata.label=unique(in.data$age_group)
-  # output_directory<-paste('C:/Users/DMW63/Desktop/My documents h/Gates/CausalImpact code/Brazil_state/', strata.label,'/', sep='')
+  # output_directory<-paste('C:/Users/DMW63/Desktop/My documents h/Gates/CausalImpact code/Brazil_hospital_state/', strata.label,'/', sep='')
   #  dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
   ds1a<-in.data
   age_groups <- paste( unique(unlist(ds1a$age_group, use.names = FALSE)))
@@ -131,7 +131,7 @@ for(k in 1:length(reg.names)){
     names(covars.raw)<-names(ds)[4]
   }
   month_i <- as.factor(as.numeric(format(ds[, date_name][data_start:nrow(ds)], '%m')))
-  if(country=="Brazil"){
+  if(country=="Brazil_hospital"){
     spline <- setNames(as.data.frame(bs(1:nrow(covars.raw), knots = 5, degree = 3)), c('bs1', 'bs2', 'bs3', 'bs4'))
     year_2008 <- numeric(nrow(covars.raw))
     year_2008[1:nrow(covars.raw) >= match(as.Date('2008-01-01'), ds[, date_name])] <- 1
