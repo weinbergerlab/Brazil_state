@@ -176,19 +176,19 @@ for(k in 1:length(reg.names)){
   data.sel<-covars
   covar<-data.sel
   #Create Monthly dummies#Monthly dummies
-  if(n_seasons==4){x<-quarter(as.Date(time_points))}
-  if(n_seasons==12){x<-month(as.Date(time_points))}
+ if(n_seasons==4){seas.var<-quarter(as.Date(time_points))}
+  if(n_seasons==12){seas.var<-month(as.Date(time_points))}
   if(n_seasons==3){
     x.m<-month(as.Date(time_points))
-    x<-x.m
-    x[x.m %in% c(1,2,3,4)]<-1
-    x[x.m %in% c(5,6,7,8)]<-2
-    x[x.m %in% c(9,10,11,12)]<-3
+    seas.var<-x.m
+    seas.var[x.m %in% c(1,2,3,4)]<-1
+    seas.var[x.m %in% c(5,6,7,8)]<-2
+    seas.var[x.m %in% c(9,10,11,12)]<-3
   }
-  x.df<-as.data.frame(as.factor(x))
-  names(x.df)<-'m'
+  seas.var.df<-as.data.frame(as.factor(seas.var))
+  names(seas.var.df)<-'m'
   dummy<-dummy::dummy #resolves function name conflict with lme4
-  season.dummies<-  as.numeric(as.character(as.matrix(dummy(x.df))))
+  season.dummies<-  as.numeric(as.character(as.matrix(dummy(seas.var.df))))
   season.dummies<-matrix(season.dummies, nrow=length(time_points), ncol=n_seasons)
   season.dummies<-season.dummies[,-n_seasons]
   dimnames(season.dummies)[[2]]<-paste0('m',1:(n_seasons-1))
@@ -358,7 +358,7 @@ for(k in 1:length(reg.names)){
     covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, predictors2)
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
-  covar.matrix.pca$month.fac<-as.factor(x.m)
+  covar.matrix.pca$month.fac<-as.factor(seas.var)
   if(season.control != 'dummy'){random.season=0} #if use harmonic, can't use random effect for season
   if(random.season==0){
     form.pca<-as.formula(paste0('outcome.pre~',paste(names(season.dummies), collapse="+") ,'+pca1 +(1|obs)'  ) )
