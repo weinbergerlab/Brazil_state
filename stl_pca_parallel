@@ -33,7 +33,6 @@ source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/
 country="Brazil_hospital"
 all_cause_name <- 'ach_noj'
 all_cause_pneu_name <- 'J12_18'
-noj_name <- 'cJ20_J22'
 date_name<-'date'
 data_start_date <- as.Date('2004-01-01')   #When do you want the analysis to start? (yyyy-mm-01)
 data_intervention_start<-as.Date('2010-01-01')   #When is the intervention introduced?  (yyyy-mm-01)
