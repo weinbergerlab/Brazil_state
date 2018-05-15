@@ -154,7 +154,7 @@ for(k in 1:length(reg.names)){
   #SECTION 2: CREATING SMOOTHED VERSIONS OF CONTROL TIME SERIES AND APPENDING THEM ONTO ORIGINAL DATAFRAME OF CONTROLS
   #EXTRACT LONG TERM TREND WITH DIFFERENT LEVELS OF SMOOTHNESS USING STL
   # Set a list of parameters for STL
-  t.windows <- c(5,25,59)
+  t.windows <- c(nextodd(0.04*nrow(ds)),nextodd(0.2*nrow(ds)),nextodd(0.5*nrow(ds)))
   covars.raw.compile<- vector("list", length(t.windows)) 
   s.windows <- "periodic"
   # STL
@@ -171,7 +171,7 @@ for(k in 1:length(reg.names)){
   covars<-covars.raw2 #COMBINE ALL VARIABLES WITH DIFFERENT SMOOTHING LEVELS, FROM RAW TO VERY SMOOTH
   ##########################################################################################
   ###########################################################################################SECTION 3: ADD MONTHLY DUMMY, TIME TREND VARIABLES TO DATASET
-  covars$t<-1:nrow(covars)/120
+  covars$t<-1:nrow(covars)/nrow(covars)
   covars$nocovars<-rep(1, times=nrow(covars)) #constant
   data.sel<-covars
   covar<-data.sel
@@ -192,6 +192,7 @@ for(k in 1:length(reg.names)){
   season.dummies<-matrix(season.dummies, nrow=length(time_points), ncol=n_seasons)
   season.dummies<-season.dummies[,-n_seasons]
   dimnames(season.dummies)[[2]]<-paste0('m',1:(n_seasons-1))
+  season.dummies<-as.data.frame(season.dummies)
   predictors<-as.matrix(covars)
   #Altrnatively, use harmonics
   index=1:length(time_points)
@@ -207,9 +208,11 @@ for(k in 1:length(reg.names)){
   outcome.pre<-outcome
   outcome.pre[post.start.index:length(outcome)]<-NA
   #COMBINE MONTHLY DUMMIES AND COVARIATES AND PANDEMIC INTO SINGLE DATAFRAME
-  if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
+  #if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
+  if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,predictors)
   }else{
-    covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
+   # covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
+    covar.matrix<-cbind.data.frame(sint1, cost1, predictors)
   }
   covar.lab<-dimnames(covar.matrix)[[2]]
   covar.matrix<-apply(covar.matrix,2,scale)
@@ -219,8 +222,6 @@ for(k in 1:length(reg.names)){
   data.fit<-cbind.data.frame(outcome.pre, covar.matrix)
   data.fit$outcome.pre<-as.integer(data.fit$outcome.pre)
   one<-rep(1,times=nrow(data.fit))
-  
-  
   
   #INITIALIZE VARIOUS LISTS TO STORE RESULTS
   aic.test <- vector(mode="numeric", length=ncol(covars))
@@ -252,15 +253,21 @@ for(k in 1:length(reg.names)){
   for(p in 1:length(combos3)){
     if(grepl('nocovars',  combos3[p] )) {
       if (season.control=='dummy'){
-        incl.names<-c('y','m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic' ) #NULL MODEL
+        #incl.names<-c('y',names(season.dummies),'pandemic' ) #NULL MODEL
+        incl.names<-c('y',names(season.dummies) ) #NULL MODEL
+        
       }else{
-        incl.names<-c('y','sint1','cost1','pandemic' ) #NULL MODEL
+        #incl.names<-c('y','sint1','cost1','pandemic' ) #NULL MODEL
+        incl.names<-c('y','sint1','cost1' ) #NULL MODEL
       }
     }else{
       if(season.control=='dummy'){
-        incl.names<-c('y','m1','m2','m3','m4','m5','m6', 'm7','m8','m9','m10','m11','pandemic', combos3[p] )
+       # incl.names<-c('y',names(season.dummies),'pandemic', combos3[p] )
+       incl.names<-c('y',names(season.dummies), combos3[p] )
       }else{
-        incl.names<-c('y','sint1','cost1','pandemic', combos3[p]  ) 
+       # incl.names<-c('y','sint1','cost1','pandemic', combos3[p]  ) 
+        incl.names<-c('y','sint1','cost1', combos3[p]  ) 
+        
       }
     }
     keep.cols<-which(names(data.fit) %in% incl.names )
@@ -344,12 +351,16 @@ for(k in 1:length(reg.names)){
   pca <- prcomp(covars.keep.pca, scale=TRUE) # scale=TRUE should be added!!
   predictors2 <- as.data.frame(pca$x[,1]) # First "1" PC
   names(predictors2)<-'pca1'
-  if(season.control=="dummy"){ covar.matrix.pca<-cbind.data.frame(outcome.pre,season.dummies,pandemic,predictors2)
+  #if(season.control=="dummy"){ covar.matrix.pca<-cbind.data.frame(outcome.pre,season.dummies,pandemic,predictors2)
+  if(season.control=="dummy"){ covar.matrix.pca<-cbind.data.frame(outcome.pre,season.dummies,predictors2)
   }else{
-    covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, pandemic,predictors2)
+   # covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, pandemic,predictors2)
+    covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, predictors2)
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
-  mod1<-glmer(outcome.pre~ m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+pandemic+pca1 +(1|obs) ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
+  #form.pca<-as.formula(paste0('outcome.pre~',names(season.dummies) ,'+pandemic+pca1 +(1|obs)'  )        )
+  form.pca<-as.formula(paste0('outcome.pre~',names(season.dummies) ,'+pca1 +(1|obs)'  )        )
+  mod1<-glmer(form.pca ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
                                                                                                                                                    optCtrl=list(maxfun=2e5)) )
   all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form=NA)
   preds.q.pca<-t(apply(all.preds.pca, 1,quantile, probs=c(0.025,0.5,0.975)))
@@ -463,4 +474,3 @@ rr.pca<-do.call(rbind, lapply(quantiles,function(xl) xl$'rr.mean.post.mod.pca') 
 rr.pca<-cbind.data.frame(reg.names,rr.pca)
 write.csv(rr.bma,'./output_STL/rr.bma.csv')
 write.csv(rr.pca,'./output_STL/rr.pca.csv')
-
