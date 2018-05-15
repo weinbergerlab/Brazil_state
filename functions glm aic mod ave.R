@@ -42,7 +42,7 @@ getTrend <- function(covar_vector, data) {
 DoSTL_trend <- function(new,t.windows,s.windows) {
   trend <- as.data.frame(matrix(NA, nrow=nrow(new), ncol=ncol(new)))
   for (j in 1:ncol(new)) {
-    ts <- ts(new[,j], frequency=12)
+    ts <- ts(new[,j], frequency=n_seasons)
     trend[,j] <- as.vector(stl(ts, s.window=s.windows, t.window=t.windows)[[1]][,2]) 
   }
   colnames(trend) <- c(paste(colnames(new),".trend.",t.windows,sep=""))
