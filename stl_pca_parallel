@@ -42,6 +42,7 @@ N.sim=10000 #total number of random draws for the predictive distribution
 bivariate=FALSE  #two control variables or 1 in regression?
 season.control='dummy'  #can either by 'harmonic' or 'dummy'
 N.buffer=24 #How many months before start evaluation?
+random.season=0 #Should seasonal dummy in PCA model be random effect? 1=random;0=fixed
 
 #################################################
 #IMPORT DATA 
@@ -358,11 +359,19 @@ for(k in 1:length(reg.names)){
     covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, predictors2)
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
-  #form.pca<-as.formula(paste0('outcome.pre~',names(season.dummies) ,'+pandemic+pca1 +(1|obs)'  )        )
-  form.pca<-as.formula(paste0('outcome.pre~',paste(names(season.dummies), collapse="+") ,'+pca1 +(1|obs)'  )        )
-  mod1<-glmer(form.pca ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
-                                                                                                                                                   optCtrl=list(maxfun=2e5)) )
-  all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form=NA)
+  covar.matrix.pca$month.fac<-as.factor(x.m)
+
+  if(season.control != 'dummy'){random.season=0} #if use harmonic, can't use random effect for season
+  if(random.season==0){
+    form.pca<-as.formula(paste0('outcome.pre~',paste(names(season.dummies), collapse="+") ,'+pca1 +(1|obs)'  ) )
+    mod1<-glmer(form.pca ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)) )
+    all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form= NA)
+  }else{
+    form.pca<-as.formula(paste0('outcome.pre~','pca1 +(1|obs) +(1|month.fac)'  )  )
+    mod1<-glmer(form.pca ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
+                                                                                       optCtrl=list(maxfun=2e5)) )
+    all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form= ~(1|month.fac))
+  }                                                                                                                               optCtrl=list(maxfun=2e5)) )
   preds.q.pca<-t(apply(all.preds.pca, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t.pca[[k]]<- outcome/preds.q.pca
   
