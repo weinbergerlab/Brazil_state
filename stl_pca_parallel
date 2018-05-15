@@ -32,6 +32,7 @@ source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/
 ###############USER SPECIFIED VALUES
 country="Brazil_hospital"
 all_cause_name <- 'ach_noj'
+strata_name<-"age_group"
 all_cause_pneu_name <- 'J12_18'
 date_name<-'date'
 data_start_date <- as.Date('2004-01-01')   #When do you want the analysis to start? (yyyy-mm-01)
@@ -49,6 +50,11 @@ random.season=0 #Should seasonal dummy in PCA model be random effect? 1=random;0
 git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_hospital_state/master/prelog_Brazil_hospital_state_processed_data.csv")      
 d1 <- read.csv(text=git.data)
 d1$age_group<-gsub("[[:punct:]]", "_", d1$age_group) #make sure age_group onl has alpha numeric characters
+#Ensure first 3 variables in correct order:
+all_names<-names(d1)
+first.three<-c(strata_name,date_name,all_cause_pneu_name)
+all_covar_names<- all_names [! all_names %in% first.three]
+d1<-d1[,c(first.three,all_covar_names)]
 ############################################  
 
 output_directory<-paste0(getwd(),'/output_STL/')
