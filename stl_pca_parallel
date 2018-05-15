@@ -359,7 +359,7 @@ for(k in 1:length(reg.names)){
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
   #form.pca<-as.formula(paste0('outcome.pre~',names(season.dummies) ,'+pandemic+pca1 +(1|obs)'  )        )
-  form.pca<-as.formula(paste0('outcome.pre~',names(season.dummies) ,'+pca1 +(1|obs)'  )        )
+  form.pca<-as.formula(paste0('outcome.pre~',paste(names(season.dummies), collapse="+") ,'+pca1 +(1|obs)'  )        )
   mod1<-glmer(form.pca ,data=covar.matrix.pca, family='poisson',control=glmerControl(optimizer="bobyqa",
                                                                                                                                                    optCtrl=list(maxfun=2e5)) )
   all.preds.pca<-simulate(mod1, nsim=10000, newdata=covar.matrix.pca, allow.new.levels=TRUE,re.form=NA)
