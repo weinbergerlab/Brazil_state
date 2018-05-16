@@ -355,7 +355,8 @@ for(k in 1:length(reg.names)){
   
   #rr for each model
   rr.post.covar<-  post.obs.sum/apply(pred.mean[eval.start.index:nrow(all.preds),],2,sum)
-  
+  setNames(rr.post.covar, dimnames(predictors)[[2]])
+
   ###SETUP AND RUN MODELS WITH FIRST PC
   covars.keep.pca<-covars[,top.covars]
   pca <- prcomp(covars.keep.pca, scale=TRUE) # scale=TRUE should be added!!
