@@ -47,7 +47,7 @@ random.season=0 #Should seasonal dummy in PCA model be random effect? 1=random;0
 #################################################
 #IMPORT DATA 
 #(sample data pulled directly from github)
-git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_hospital_state/master/prelog_Brazil_hospital_state_processed_data.csv")      
+git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/prelog_Brazil_state_processed_data.csv")      
 d1 <- read.csv(text=git.data)
 d1$age_group<-gsub("[[:punct:]]", "_", d1$age_group) #make sure age_group onl has alpha numeric characters
 #Ensure first 3 variables in correct order:
