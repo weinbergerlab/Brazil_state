@@ -353,6 +353,9 @@ for(k in 1:length(reg.names)){
   log_rr_full_t_samples.covar<-cov(t(log_rr_full_t))
   log_rr_full_t_samples.prec<-solve(log_rr_full_t_samples.covar)
   
+  #rr for each model
+  rr.post.covar<-  post.obs.sum/apply(pred.mean[eval.start.index:nrow(all.preds),],2,sum)
+  
   ###SETUP AND RUN MODELS WITH FIRST PC
   covars.keep.pca<-covars[,top.covars]
   pca <- prcomp(covars.keep.pca, scale=TRUE) # scale=TRUE should be added!!
@@ -457,7 +460,7 @@ for(k in 1:length(reg.names)){
   model_weights_2<-aic.df$w_aic
   model_weights_2[aic.df$w_aic<0.03]=0.03 #set a minimum threshold for weights so that even 0 weighted lines show up faintly
   mods.covars<-names(covars)
-  format.mods.covars<-paste(round(rr.mean.post.mod,2) )
+  format.mods.covars<-paste(round(rr.post.covar,2) )
   
   col.plot<-rgb(0,0,0, alpha=model_weights_2)
   plot.order<-aic.df$model.rank
