@@ -479,6 +479,9 @@ for(k in 1:length(reg.names)){
                           evaluate = TRUE,line = list(color = col.plot[j]),  hoverinfo = 'text',
                           text = paste0(mods.covars[j]," RR:",format.mods.covars[j]," Weight ",round(aic.df$w_aic,2)[j]))  
   }           
+  plotlies <- add_trace(plotlies,x=time_points,y = preds.q.pca[,'50%'] ,name = "STL+PCA",  mode = "lines",
+                      evaluate = TRUE,line = list(color = 'red'),  hoverinfo = 'text',
+                      text = paste0('STL+PCA', " RR:",rr.post.q.pca['50%'] ))  
   htmlwidgets::saveWidget(plotlies, paste0(output_directory,'plottly.plots.', country,strata.label, '.html' ))
   
 }
