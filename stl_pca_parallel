@@ -378,7 +378,7 @@ for(k in 1:length(reg.names)){
   }else{
     form.pca<-as.formula(paste0('outcome.pre~','pca1 +(1|obs) +(1|month.fac)'  )  )
     stan_mod<- stan_glmer(form.pca, data=covar.matrix.pca, cores=4, chains=4 , family=poisson(link='log'))
-    all.preds.pca<- t(posterior_predict(stan_mod, newdata=covar.matrix.pca[,-1],re.form= ~(1|month.fac)))
+    all.preds.pca<- t(posterior_predict(stan_mod, newdata=covar.matrix.pca[,-1]))
 }
   preds.q.pca<-t(apply(all.preds.pca, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t.pca[[k]]<- outcome/preds.q.pca
