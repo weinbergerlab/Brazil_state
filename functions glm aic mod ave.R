@@ -70,14 +70,26 @@ return(glm.out)
 }
 
 obs.uncertainty<-function(param.ds){
-  mod1<-  param.ds$mod1
-  ds.fit.fun<-param.ds$ds.fit.fun
-  N.samps<-param.ds$Nsamps
+   N.samps<-param.ds$Nsamps
   if(N.samps>=1){
-  preds.stage2<-simulate(mod1, nsim=N.samps, newdata=ds.fit.fun, allow.new.levels=TRUE,re.form=NULL)
-  }else{
+    covar.mat1<-param.ds$ds.fit.fun
+    mod1<-param.ds$mod1
+    covars3<-as.matrix(covar.mat1[c(names(season.dummies),param.ds$test.var)])
+    covars3<-cbind.data.frame(rep(1, times=nrow(covars3)), covars3)
+    names(covars3)[1]<-"Intercept"
+    N.stage1<-round(sqrt(N.samps))
+    pred.coefs.reg.mean<- mvrnorm(n = N.stage1, mu=fixef(mod1), Sigma=vcov( mod1))
+    pred.coefs.reg.mean<-matrix(pred.coefs.reg.mean, nrow=N.stage1)
+    preds.stage1.regmean<- as.matrix(covars3) %*% t(pred.coefs.reg.mean)
+    re.sd<-as.numeric(sqrt(VarCorr(mod1)[[1]]))
+    preds.stage1<-rnorm(n<-length(preds.stage1.regmean), mean=preds.stage1.regmean, sd=re.sd)
+    preds.stage1<-matrix(preds.stage1, nrow=nrow(preds.stage1.regmean), ncol=ncol(preds.stage1.regmean))
+    preds.stage2<-rpois(n=N.samps*nrow(preds.stage1), lambda=exp(preds.stage1))  
+    preds.stage2<-matrix(preds.stage2,nrow=nrow(preds.stage1), ncol=N.samps)
+    }else{
     preds.stage2<-NA
   }
 }
+
 
 
