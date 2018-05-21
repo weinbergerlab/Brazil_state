@@ -74,7 +74,12 @@ obs.uncertainty<-function(param.ds){
   if(N.samps>=1){
     covar.mat1<-param.ds$ds.fit.fun
     mod1<-param.ds$mod1
+    test.var<-param.ds$test.var
+    if(test.var== 'nocovars'){ 	  
+	covars3<-as.matrix(covar.mat1[c(names(season.dummies))])
+      }else{
     covars3<-as.matrix(covar.mat1[c(names(season.dummies),param.ds$test.var)])
+	    }
     covars3<-cbind.data.frame(rep(1, times=nrow(covars3)), covars3)
     names(covars3)[1]<-"Intercept"
     N.stage1<-round(sqrt(N.samps))
