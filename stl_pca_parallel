@@ -381,7 +381,8 @@ for(k in 1:length(reg.names)){
       names(covars3)[1]<-"Intercept"
       pred.coefs.reg.mean<- mvrnorm(n = 100, mu=fixef(mod1), Sigma=vcov( mod1))
       preds.stage1.regmean<- as.matrix(covars3) %*% t(pred.coefs.reg.mean)
-      preds.stage1<-rnorm(n<-length(preds.stage1.regmean), mean=preds.stage1.regmean, sd=0.113)
+      re.sd<-as.numeric(sqrt(VarCorr(mod1)[[1]]))
+      preds.stage1<-rnorm(n<-length(preds.stage1.regmean), mean=preds.stage1.regmean, sd=re.sd)
       preds.stage1<-matrix(preds.stage1, nrow=nrow(preds.stage1.regmean), ncol=ncol(preds.stage1.regmean))
       preds.stage2<-rpois(n=preds.stage1*100, exp(preds.stage1))
       all.preds.pca<-matrix(preds.stage2, nrow=nrow(preds.stage1), ncol=ncol(preds.stage1)*100)
