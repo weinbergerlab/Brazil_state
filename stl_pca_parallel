@@ -40,10 +40,11 @@ data_intervention_start<-as.Date('2010-01-01')   #When is the intervention intro
 n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
 N.sim=10000 #total number of random draws for the predictive distribution
 bivariate=FALSE  #two control variables or 1 in regression?
-season.control='dummy'  #can either by 'harmonic' or 'dummy'
 N.buffer=24 #How many months before start evaluation?
+######################
 
 random.season=0 #Should seasonal dummy in PCA model be random effect? 1=random;0=fixed--DON"T CHANGE THIS
+season.control='dummy'  #can either by 'harmonic' or 'dummy'
 
 #################################################
 #IMPORT DATA 
