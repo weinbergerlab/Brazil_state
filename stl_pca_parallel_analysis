@@ -47,8 +47,8 @@ season.control='dummy'  #can either by 'harmonic' or 'dummy'
 #################################################
 #IMPORT DATA 
 #(sample data pulled directly from github)
-git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/prelog_Brazil_state_processed_data.csv")      
-d1 <- read.csv(text=git.data)
+#git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/prelog_Brazil_state_processed_data.csv")      
+#d1 <- read.csv(text=git.data)
 d1$age_group<-gsub("[[:punct:]]", "_", d1$age_group) #make sure age_group onl has alpha numeric characters
 #Ensure first 3 variables in correct order:
 all_names<-names(d1)
