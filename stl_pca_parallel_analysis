@@ -1,45 +1,45 @@
-# Clear workspace to get rid of old junk
-#rm(list=ls(all=TRUE))
-
-#These 2 packages need to be installed and loaded first
-#install.packages('devtools')
-require(devtools)
-#install.packages('abind')
-require(abind)
-
-#read in function file--can read directly from github using devtools function 'source_url'
-source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
-#source('functions glm aic mod ave.R')
-
-packages <- c('RCurl','reshape2','RColorBrewer','matlib','lme4', 'dummy','rstanarm','knitr','plotly','MASS', 'parallel','splines', 'lubridate','devtools')
-packageHandler(packages, update_packages = FALSE, install_packages = FALSE) #change to true if need to install any
-sapply(packages, library, quietly = TRUE, character.only = TRUE)
-
-
-#Set working directory: default to desktop--different path for windows vs Mac
-if(.Platform$OS.type == "windows") {
-  desktop<-file.path(Sys.getenv("USERPROFILE"),"Desktop")
-} else {
-  desktop<- "~/Desktop"
-}
-
-setwd(desktop)
-
-
-
-###############USER SPECIFIED VALUES
-country="Brazil_hospital"
-all_cause_name <- 'ach_noj'
-strata_name<-"age_group"
-all_cause_pneu_name <- 'J12_18'
-date_name<-'date'
-data_start_date <- as.Date('2004-01-01')   #When do you want the analysis to start? (yyyy-mm-01)
-data_intervention_start<-as.Date('2010-01-01')   #When is the intervention introduced?  (yyyy-mm-01)
-n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
-N.sim=10000 #total number of random draws for the predictive distribution
-bivariate=FALSE  #two control variables or 1 in regression?
-N.buffer=24 #How many months before start evaluation?
-######################
+# # Clear workspace to get rid of old junk
+# #rm(list=ls(all=TRUE))
+# 
+# #These 2 packages need to be installed and loaded first
+# #install.packages('devtools')
+# require(devtools)
+# #install.packages('abind')
+# require(abind)
+# 
+# #read in function file--can read directly from github using devtools function 'source_url'
+# source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/functions%20glm%20aic%20mod%20ave.R")      
+# #source('functions glm aic mod ave.R')
+# 
+# packages <- c('RCurl','reshape2','RColorBrewer','matlib','lme4', 'dummy','rstanarm','knitr','plotly','MASS', 'parallel','splines', 'lubridate','devtools')
+# packageHandler(packages, update_packages = FALSE, install_packages = FALSE) #change to true if need to install any
+# sapply(packages, library, quietly = TRUE, character.only = TRUE)
+# 
+# 
+# #Set working directory: default to desktop--different path for windows vs Mac
+# if(.Platform$OS.type == "windows") {
+#   desktop<-file.path(Sys.getenv("USERPROFILE"),"Desktop")
+# } else {
+#   desktop<- "~/Desktop"
+# }
+# 
+# setwd(desktop)
+# 
+# 
+# 
+# ###############USER SPECIFIED VALUES
+# country="Brazil_hospital"
+# all_cause_name <- 'ach_noj'
+# strata_name<-"age_group"
+# all_cause_pneu_name <- 'J12_18'
+# date_name<-'date'
+# data_start_date <- as.Date('2004-01-01')   #When do you want the analysis to start? (yyyy-mm-01)
+# data_intervention_start<-as.Date('2010-01-01')   #When is the intervention introduced?  (yyyy-mm-01)
+# n_seasons=12 #12 for monthly, 4 for quarterly, 3 for triannually
+# N.sim=10000 #total number of random draws for the predictive distribution
+# bivariate=FALSE  #two control variables or 1 in regression?
+# N.buffer=24 #How many months before start evaluation?
+# ######################
 
 random.season=0 #Should seasonal dummy in PCA model be random effect? 1=random;0=fixed--DON"T CHANGE THIS
 season.control='dummy'  #can either by 'harmonic' or 'dummy'
@@ -183,7 +183,7 @@ for(k in 1:length(reg.names)){
   data.sel<-covars
   covar<-data.sel
   #Create Monthly dummies#Monthly dummies
- if(n_seasons==4){seas.var<-quarter(as.Date(time_points))}
+  if(n_seasons==4){seas.var<-quarter(as.Date(time_points))}
   if(n_seasons==12){seas.var<-month(as.Date(time_points))}
   if(n_seasons==3){
     x.m<-month(as.Date(time_points))
@@ -218,7 +218,7 @@ for(k in 1:length(reg.names)){
   #if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,pandemic,predictors)
   if(season.control=="dummy"){ covar.matrix<-cbind.data.frame(season.dummies,predictors)
   }else{
-   # covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
+    # covar.matrix<-cbind.data.frame(sint1, cost1, pandemic,predictors)
     covar.matrix<-cbind.data.frame(sint1, cost1, predictors)
   }
   covar.lab<-dimnames(covar.matrix)[[2]]
@@ -269,10 +269,10 @@ for(k in 1:length(reg.names)){
       }
     }else{
       if(season.control=='dummy'){
-       # incl.names<-c('y',names(season.dummies),'pandemic', combos3[p] )
-       incl.names<-c('y',names(season.dummies), combos3[p] )
+        # incl.names<-c('y',names(season.dummies),'pandemic', combos3[p] )
+        incl.names<-c('y',names(season.dummies), combos3[p] )
       }else{
-       # incl.names<-c('y','sint1','cost1','pandemic', combos3[p]  ) 
+        # incl.names<-c('y','sint1','cost1','pandemic', combos3[p]  ) 
         incl.names<-c('y','sint1','cost1', combos3[p]  ) 
         
       }
@@ -356,7 +356,7 @@ for(k in 1:length(reg.names)){
   #rr for each model
   rr.post.covar<-  post.obs.sum/apply(pred.mean[eval.start.index:nrow(all.preds),],2,sum)
   setNames(rr.post.covar, dimnames(predictors)[[2]])
-
+  
   ###SETUP AND RUN MODELS WITH FIRST PC
   covars.keep.pca<-covars[,top.covars]
   pca <- prcomp(covars.keep.pca, scale=TRUE) # scale=TRUE should be added!!
@@ -365,7 +365,7 @@ for(k in 1:length(reg.names)){
   #if(season.control=="dummy"){ covar.matrix.pca<-cbind.data.frame(outcome.pre,season.dummies,pandemic,predictors2)
   if(season.control=="dummy"){ covar.matrix.pca<-cbind.data.frame(outcome.pre,season.dummies,predictors2)
   }else{
-   # covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, pandemic,predictors2)
+    # covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, pandemic,predictors2)
     covar.matrix.pca<-cbind.data.frame(outcome.pre,sint1, cost1, predictors2)
   }
   covar.matrix.pca$obs<-as.factor(1:nrow(covar.matrix.pca))
@@ -373,23 +373,23 @@ for(k in 1:length(reg.names)){
   if(season.control != 'dummy'){random.season=0} #if use harmonic, can't use random effect for season
   if(random.season==0){
     form.pca<-as.formula(paste0('outcome.pre~',paste(names(season.dummies), collapse="+") ,'+pca1 +(1|obs)'  ) )
-      mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log) )
-     #GENERATE PREDICTIONS
-      covars3<-as.matrix(covar.matrix.pca[c(names(season.dummies),'pca1')])
-      covars3<-cbind.data.frame(rep(1, times=nrow(covars3)), covars3)
-      names(covars3)[1]<-"Intercept"
-      pred.coefs.reg.mean<- mvrnorm(n = 100, mu=fixef(mod1), Sigma=vcov( mod1))
-      preds.stage1.regmean<- as.matrix(covars3) %*% t(pred.coefs.reg.mean)
-      re.sd<-as.numeric(sqrt(VarCorr(mod1)[[1]]))
-      preds.stage1<-rnorm(n<-length(preds.stage1.regmean), mean=preds.stage1.regmean, sd=re.sd)
-      preds.stage1<-matrix(preds.stage1, nrow=nrow(preds.stage1.regmean), ncol=ncol(preds.stage1.regmean))
-      preds.stage2<-rpois(n=preds.stage1*100, exp(preds.stage1))
-      all.preds.pca<-matrix(preds.stage2, nrow=nrow(preds.stage1), ncol=ncol(preds.stage1)*100)
+    mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log) )
+    #GENERATE PREDICTIONS
+    covars3<-as.matrix(covar.matrix.pca[c(names(season.dummies),'pca1')])
+    covars3<-cbind.data.frame(rep(1, times=nrow(covars3)), covars3)
+    names(covars3)[1]<-"Intercept"
+    pred.coefs.reg.mean<- mvrnorm(n = 100, mu=fixef(mod1), Sigma=vcov( mod1))
+    preds.stage1.regmean<- as.matrix(covars3) %*% t(pred.coefs.reg.mean)
+    re.sd<-as.numeric(sqrt(VarCorr(mod1)[[1]]))
+    preds.stage1<-rnorm(n<-length(preds.stage1.regmean), mean=preds.stage1.regmean, sd=re.sd)
+    preds.stage1<-matrix(preds.stage1, nrow=nrow(preds.stage1.regmean), ncol=ncol(preds.stage1.regmean))
+    preds.stage2<-rpois(n=preds.stage1*100, exp(preds.stage1))
+    all.preds.pca<-matrix(preds.stage2, nrow=nrow(preds.stage1), ncol=ncol(preds.stage1)*100)
   }else{
     form.pca<-as.formula(paste0('outcome.pre~','pca1 +(1|obs) +(1|month.fac)'  )  )
-      mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log) )
-   # all.preds.pca<- t(posterior_predict(stan_mod, newdata=covar.matrix.pca[,-1]))
-}
+    mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log) )
+    # all.preds.pca<- t(posterior_predict(stan_mod, newdata=covar.matrix.pca[,-1]))
+  }
   rr.pca.t<-outcome/all.preds.pca
   preds.q.pca<-t(apply(all.preds.pca, 1,quantile, probs=c(0.025,0.5,0.975)))
   rr.post.t.pca[[k]]<- t(apply(rr.pca.t, 1,quantile, probs=c(0.025,0.5,0.975)))
@@ -491,9 +491,9 @@ for(k in 1:length(reg.names)){
                           evaluate = TRUE,line = list(color = col.plot[j]),  hoverinfo = 'text',
                           text = paste0(mods.covars[j]," RR:",format.mods.covars[j]," Weight ",round(aic.df$w_aic,2)[j]))  
   }           
- plotlies <- add_trace(plotlies,x=time_points,y = preds.q.pca[,'50%'] ,name = "STL+PCA",  mode = "lines",
-                      evaluate = TRUE,line = list(color = 'red'),  hoverinfo = 'text',
-                      text = paste0('STL+PCA', " RR:",round(rr.mean.post.mod.pca['50%'],2) ))  
+  plotlies <- add_trace(plotlies,x=time_points,y = preds.q.pca[,'50%'] ,name = "STL+PCA",  mode = "lines",
+                        evaluate = TRUE,line = list(color = 'red'),  hoverinfo = 'text',
+                        text = paste0('STL+PCA', " RR:",round(rr.mean.post.mod.pca['50%'],2) ))  
   htmlwidgets::saveWidget(plotlies, paste0(output_directory,'plottly.plots.', country,strata.label, '.html' ))
   
 }
@@ -506,4 +506,4 @@ rr.bma<-cbind.data.frame(reg.names,rr.bma)
 rr.pca<-do.call(rbind, lapply(quantiles,function(xl) xl$'rr.mean.post.mod.pca') )
 rr.pca<-cbind.data.frame(reg.names,rr.pca)
 write.csv(rr.bma,'./output_STL/rr.bma.csv')
-write.csv(rr.pca,'./output_STL/rr.pca.csv')
+write.csv(rr.pca,'./output_STL/rr.pca.csv')      
