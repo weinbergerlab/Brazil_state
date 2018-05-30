@@ -499,7 +499,7 @@ for(k in 1:length(reg.names)){
 }
 
 names(quantiles)<-reg.names
-saveRDS(quantiles,paste0(output_directory,'quantiles_',country,'.rds' )
+saveRDS(quantiles,paste0(output_directory,'quantiles_',country,'.rds' ))
 
 rr.bma<-do.call(rbind, lapply(quantiles,function(xl) xl$'rr.mean.post.mod') )
 rr.bma<-cbind.data.frame(reg.names,rr.bma)
