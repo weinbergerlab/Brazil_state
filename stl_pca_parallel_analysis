@@ -57,7 +57,7 @@ all_covar_names<- all_names [! all_names %in% first.three]
 d1<-d1[,c(first.three,all_covar_names)]
 ############################################  
 
-output_directory<-paste0(getwd(),'/output_STL/')
+output_directory<-paste0(getwd(),'/output_STL/',country,'/')
 dir.create(output_directory, recursive=TRUE, showWarnings = FALSE)
 
 
