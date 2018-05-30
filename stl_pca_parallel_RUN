@@ -41,5 +41,9 @@ bivariate=FALSE  #two control variables or 1 in regression?
 N.buffer=24 #How many months before start evaluation?
 ######################
 
+#IMPORT DATA (default is to read Brazil state-level data from github..can change read.csv to a file saved on computer)
+git.data= getURL("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/prelog_Brazil_state_processed_data.csv")      
+d1 <- read.csv(text=git.data)
+
 #Run the analysis
 source_url("https://raw.githubusercontent.com/weinbergerlab/Brazil_state/master/stl_pca_parallel_analysis")      
