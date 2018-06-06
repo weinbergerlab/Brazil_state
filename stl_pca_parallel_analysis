@@ -408,7 +408,7 @@ for(k in 1:length(reg.names)){
   log_rr_full_t_quantiles.pca<-apply(log_rr_full_t.pca,1, quantile, probs=c(0.025,0.5,0.975))
   log_rr_full_t_sd.pca<-t(apply(log_rr_full_t.pca, 1, sd, na.rm = TRUE))
   log_rr_full_t_samples.covar.pca<-cov(t(log_rr_full_t.pca))
-  log_rr_full_t_samples.prec.pca<-solve(log_rr_full_t_samples.covar.pca[post.start.index:nrow(log_rr_full_t_samples),post.start.index:nrow(log_rr_full_t_samples) ])
+  log_rr_full_t_samples.prec.pca<-solve(log_rr_full_t_samples.covar.pca[post.start.index:nrow(log_rr_full_t_samples.covar.pca),post.start.index:nrow(log_rr_full_t_samples.covar.pca) ])
   #log_rr_full_t_samples.prec.pca<-NA
   quantiles[[k]]<-list(rr.mean.post.mod, outcome, log_rr_full_t_quantiles, log_rr_full_t_sd,log_rr_full_t_samples.prec,model.weight,
                        rr.mean.post.mod.pca, log_rr_full_t_quantiles.pca, log_rr_full_t_sd.pca,log_rr_full_t_samples.prec.pca)
