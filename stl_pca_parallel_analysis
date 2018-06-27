@@ -373,7 +373,8 @@ for(k in 1:length(reg.names)){
   if(season.control != 'dummy'){random.season=0} #if use harmonic, can't use random effect for season
   if(random.season==0){
     form.pca<-as.formula(paste0('outcome.pre~',paste(names(season.dummies), collapse="+") ,'+pca1 +(1|obs)'  ) )
-    mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log) )
+    mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log),control=glmerControl(optimizer="bobyqa",
+                                                                                                optCtrl=list(maxfun=2e5)) )
     #GENERATE PREDICTIONS
     covars3<-as.matrix(covar.matrix.pca[c(names(season.dummies),'pca1')])
     covars3<-cbind.data.frame(rep(1, times=nrow(covars3)), covars3)
@@ -387,7 +388,8 @@ for(k in 1:length(reg.names)){
     all.preds.pca<-matrix(preds.stage2, nrow=nrow(preds.stage1), ncol=ncol(preds.stage1)*100)
   }else{
     form.pca<-as.formula(paste0('outcome.pre~','pca1 +(1|obs) +(1|month.fac)'  )  )
-    mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log) )
+    mod1<-glmer(form.pca ,data=covar.matrix.pca, family=poisson(link=log),control=glmerControl(optimizer="bobyqa",
+                                                                                                optCtrl=list(maxfun=2e5)) )
     # all.preds.pca<- t(posterior_predict(stan_mod, newdata=covar.matrix.pca[,-1]))
   }
   rr.pca.t<-outcome/all.preds.pca
